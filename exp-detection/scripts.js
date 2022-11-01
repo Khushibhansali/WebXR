@@ -141,7 +141,6 @@ $(document).ready(function () {
     $("#main").append('<a-plane id="opaque-vr" material="color:' + $('#background-color').val() + '; transparent:true;opacity:1" width="200" height="200" visible="false" position="0 0 -49.1"></a-plane>');
 
     var gabor = createGabor(100, 0.1, 45, 10, 0.5, 1);
-    console.log("in the benninging",parseFloat($("#size-std").val()));
 
     $("#gabor").append(gabor);
     rr = gabor.toDataURL("image/png").split(';base64,')[1];
@@ -177,8 +176,6 @@ $(document).ready(function () {
 
     $("#size-std").keyup(function () {
         var gabor = createGabor(100, $("#frequency").val(), 45, $("#size-std").val(), 0.5, 1);
-        console.log( "lala", parseFloat($("#size-std").val()));
-
         $("#gabor").html(gabor);
         rr = gabor.toDataURL("image/png").split(';base64,')[1];
         document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
@@ -186,8 +183,6 @@ $(document).ready(function () {
 
     $("#frequency").keyup(function () {
         var gabor = createGabor(100, $("#frequency").val(), 45, $("#size-std").val(), 0.5, 1);
-        console.log("hehe", parseFloat($("#size-std").val()));
-
         $("#gabor").html(gabor);
         rr = gabor.toDataURL("image/png").split(';base64,')[1];
         document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
@@ -450,8 +445,8 @@ async function newTrial(response) {
 
     // contrast = 0.2;
     angle = Math.random() * 360;
+    //changed last parameter to be the contrast
     gabor = createGabor(100, parseFloat($("#frequency").val()), angle, parseFloat($("#size-std").val()), 0.5, 1);
-    console.log("main",parseFloat($("#size-std").val()))
 
     await showNoise();
     setTimeout(async function () {
@@ -483,7 +478,16 @@ async function newTrial(response) {
                     counter = 0;
                 }
                 document.getElementById("gabor-vr").setAttribute("position", position.join(" "));
-                Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "0") });
+                
+                //target follows the 9 fixed positions
+                cuePosition=[[position[0], position[1]-7, position[2]], [position[0], position[1]+7, position[2]], [position[0]-7, position[1], position[2]], [position[0]+7, position[1], position[2]]];
+                var index = 0;
+                Array.from(document.getElementsByClassName("cue")).forEach(function (e) { 
+                                        e.setAttribute("material", "opacity", "1");
+                                        e.setAttribute("position", cuePosition[index].join(" "));
+                                        index+=1;
+                                        });
+
             }   
             if ($("#random-location").prop("checked")) {
                 position = [Math.random() * positionVariation - positionVariation / 2, Math.random() * positionVariation - positionVariation / 2, -50];
