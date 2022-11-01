@@ -1,0 +1,79 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <script src="http://192.168.0.113:1337/vorlon.js"></script>
+    <link href="../style.css" rel="stylesheet">
+    <script src="../lib/jquery-3.6.0.min.js" type="text/javascript"> </script>
+    <script src="../lib/jquery.minicolors.min.js" type="text/javascript"> </script>
+    <script src="../lib/aframe.min.js" type="text/javascript"> </script>
+    <script src="scripts.js" type="text/javascript"> </script>
+    <link rel="stylesheet" href="../lib/jquery.minicolors.css">
+    <title>XR Detection Experiment</title>
+</head>
+
+<body>
+    <a-scene renderer="foveationLevel: 3; antialias: false" vr-mode-ui="enterVRButton: #myEnterVRButton;">
+        <a-sky id="sky" color="rgb(128,128,128)"></a-sky>
+        <a-entity light="type: ambient; color: #FFF"></a-entity>
+        <a-entity oculus-touch-controls="hand: left" thumbstick-logging></a-entity>
+        <a-entity oculus-touch-controls="hand: right" thumbstick-logging button-listener></a-entity>
+
+        <a-entity vive-controls="hand: left" thumbstick-logging></a-entity>
+        <a-entity vive-controls="hand: right" thumbstick-logging button-listener></a-entity>
+
+        <a-entity daydream-controls="hand: right" thumbstick-logging button-listener></a-entity>
+        <a-entity gearvr-controls="hand: right" thumbstick-logging button-listener></a-entity>
+        <a-entity oculus-go-controls="hand: right" thumbstick-logging button-listener></a-entity>
+
+        <a-entity camera rotation-reader id="camera">
+            <a-entity id="white-balance" geometry="primitive: plane; height: 10; width: 10" position="0 0 -1"
+                material="color: white; opacity: 1;" visible="false"></a-entity>
+            <a-entity id="alignment" visible="false"></a-entity>
+            <a-entity id="main">
+                <!-- <a-entity geometry="primitive: plane; height: 1000; width: 1000" position="0 0 -100.5"
+                    material="color:rgb(128,128,128); opacity: 1; repeat: 50 50"></a-entity> -->
+
+
+
+                <!-- <a-entity material="color: #FFF;" geometry="primitive: plane; width: 2; height: 2; " position="0 0 -100"
+                    id="flyingbox1" flyaway="speed: 0.0001" class="flying"></a-entity> -->
+                <a-entity id="bottom-text" text="value: Press A for present, B for absent; align: center; width: 50"
+                    position="0 -25 -50"></a-entity>
+            </a-entity>
+        </a-entity>
+        <a id="myEnterVRButton" href="#">START!</a>
+    </a-scene>
+    <div id="info">
+        <p>Press A to say yes, press B to say no</p>
+        <p>Participant ID: <input type="text" class="input" id="participant-id">
+        </p>
+        <p>Number of trials: <input type="text" class="input" id="num-trials" value="10">
+        </p>
+        <p>Size (std): <input type="text" class="input" id="size-std" value="10">
+        </p>
+        <p>Frequency: <input type="text" class="input" id="frequency" value="0.1">
+        </p>
+        <p>Maximum contrast: <input type="text" class="input" id="max-contrast" value="0.04">
+        </p>
+        <p>Steps contrast: <input type="text" class="input" id="steps-contrast" value="0">
+        </p>
+        <p>Random location: <input type="checkbox" class="input" id="random-location">
+        </p>
+        <p>Fixed position: <input type="checkbox" class="input" id="fixed-position">
+        </p>
+        <p>Background color: <input type="text" class="input" id="background-color" value="#7F7F7F">
+        </p>
+        <p>Background noise: <input type="checkbox" class="input" id="background-noise">
+        </p>
+        <div id="noise-params">
+            <p>Noise sigma: <input type="text" class="input" id="noise-sigma" value="100">
+            </p>
+            <p>Gaussian sigma: <input type="text" class="input" id="gaussian-sigma" value="0">
+            </p>
+        </div>
+        <div id="gabor" style="background:rgb(128,128,128);text-align: center;width: fit-content; margin: auto;"></div>
+    </div>
+</body>
+
+</html>
