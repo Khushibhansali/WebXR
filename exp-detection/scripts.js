@@ -12,7 +12,7 @@ var sceneNumber = 0;
 var prev_time = 0;
 
 var responses = [];
-var present = true, contrast = 1, position = [0, 0, -50];
+var contrast = 1, position = [0, 0, -50];
 var stimulusOn = -1, stimulusOff = -1;
 
 var positionVariation = 70;
@@ -22,22 +22,53 @@ var acceptingResponses = false;
 var doubleQuit = false;
 
 var backgroundColor = "#7F7F7F";
+var rotationAngle = 40;
 
-var loc = [[-38, 38], [0, 38],[38, 38], [-38, 0], [0,0], [38, 0], [-38,-38], [0, -38], [38, -38]];
+var loc = [[-50, 30], [0, 30],[50, 30], [-50, 0], [0,0], [50, 0], [-50,-30], [0, -30], [50, -30]];
+
 var counter = 0;
+var angle2 = 45;
+var Imax = 132;
+var Imin = 122;
 
 AFRAME.registerComponent('button-listener', {
     init: function () {
         var el = this.el;
 
         el.addEventListener('abuttondown', function (evt) {
-            if (acceptingResponses)
-                newTrial(true);
+            if (acceptingResponses){
+                Imax += 1;
+                if (Imax % 2 == 0){
+                    Imin-=2;
+                }
+                contrast = (Imax - Imin)/ (Imax + Imin);
+
+                var gabor = createGabor(100, $("#frequency").val(), angle2, $("#size-std").val(), 0.5, contrast);
+                $("#gabor").html(gabor);
+                rr = gabor.toDataURL("image/png").split(';base64,')[1];
+                document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
+            }
         });
 
         el.addEventListener('bbuttondown', function (evt) {
+            if (acceptingResponses){
+                Imax -= 1;
+
+                if (Imax % 2 == 0){
+                    Imin+=2;
+                }
+                contrast = (Imax - Imin)/ (Imax + Imin);
+
+                var gabor = createGabor(100, $("#frequency").val(), angle2, $("#size-std").val(), 0.5, contrast);
+                $("#gabor").html(gabor);
+                rr = gabor.toDataURL("image/png").split(';base64,')[1];
+                document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
+            }
+        });
+
+        el.addEventListener('xbuttondown', function(evt){
             if (acceptingResponses)
-                newTrial(false);
+                newTrial(true);
         });
 
         el.addEventListener('trackpadchanged', function (evt) {
@@ -91,7 +122,10 @@ AFRAME.registerComponent('thumbstick-logging', {
                 thumbstickMoving = false;
             }
         }
-        if (evt.detail.y < -0.95) { console.log("UP"); }
+        if (evt.detail.y < -0.95) { 
+            console.log("UP"); 
+               
+        }
         if (evt.detail.x < -0.95) {
             console.log("LEFT");
             if (thumbstickMoving) {
@@ -137,6 +171,8 @@ $(document).ready(function () {
     //     document.getElementById("keypressed").setAttribute("text", "value", e.key);
     //     $("#keypressed").attr("text", "value", e.key);
     // });
+    rotationAngle = $("#distance").val() * Math.PI / 180;
+
     $("#main").append('<a-plane id="noise-vr" material="transparent:true;opacity:0" width="100" height="100" position="0 0 -50.1"></a-plane>');
     $("#main").append('<a-plane id="opaque-vr" material="color:' + $('#background-color').val() + '; transparent:true;opacity:1" width="200" height="200" visible="false" position="0 0 -49.1"></a-plane>');
 
@@ -156,6 +192,7 @@ $(document).ready(function () {
 
     stimulusOn = Date.now();
     acceptingResponses = true;
+    
     $("#info").on("keypress", function (e) {
         e.stopPropagation();
     });
@@ -163,9 +200,32 @@ $(document).ready(function () {
         let keycode = (event.keyCode ? event.keyCode : event.which);
         if (acceptingResponses) {
             if (keycode == '97') {
+                Imax += 1;
+                if (Imax % 2 == 0){
+                    Imin-=1;
+                }
+                contrast = (Imax - Imin)/ (Imax + Imin);
+
+                var gabor = createGabor(100, $("#frequency").val(), angle2, $("#size-std").val(), 0.5, contrast);
+                $("#gabor").html(gabor);
+                rr = gabor.toDataURL("image/png").split(';base64,')[1];
+                document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
+            } if (keycode == "98") {
+                Imax -= 1;
+
+                 if (Imax % 2 == 0){
+                     Imin+=1;
+                 }
+                contrast = (Imax - Imin)/ (Imax + Imin);
+
+                var gabor = createGabor(100, $("#frequency").val(), angle2, $("#size-std").val(), 0.5, contrast);
+                $("#gabor").html(gabor);
+                rr = gabor.toDataURL("image/png").split(';base64,')[1];
+                document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
+              //  newTrial(false);
+            }
+            if (keycode == "99"){
                 newTrial(true);
-            } else if (keycode == "98") {
-                newTrial(false);
             }
         }
     });
@@ -179,6 +239,7 @@ $(document).ready(function () {
         $("#gabor").html(gabor);
         rr = gabor.toDataURL("image/png").split(';base64,')[1];
         document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
+        angle2 = angle;
     });
 
     $("#frequency").keyup(function () {
@@ -186,6 +247,7 @@ $(document).ready(function () {
         $("#gabor").html(gabor);
         rr = gabor.toDataURL("image/png").split(';base64,')[1];
         document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
+        angle2 = angle;
     });
 
     $("#background-noise").change(function () {
@@ -412,41 +474,32 @@ function contrastImage(imageData, contrast) {
 async function newTrial(response) {
     stimulusOff = Date.now();
     acceptingResponses = false;
-
-    str = present == response ? "Correct!" : "Incorrect!";
+    
     // document.getElementById("opaque-vr").setAttribute("material", "opacity", "1");
     $("#opaque-vr").attr("visible", "true");
-    document.getElementById("bottom-text").setAttribute("text", "value", str + "\n\n" + (responses.length + 1) + "/" + parseInt($("#num-trials").val()));
+    document.getElementById("bottom-text").setAttribute("text", "value", "\n\n" + (responses.length + 1) + "/" + parseInt($("#num-trials").val()));
     document.getElementById("bottom-text").setAttribute("position", "0 0 -49");
     document.getElementById("gabor-vr").setAttribute("material", "opacity", "0");
     Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "0") });
     document.getElementById("sky").setAttribute("color", "rgb(0,0,0)");
     document.getElementById("noise-vr").setAttribute("material", "opacity", "0");
     responses.push({
-        present: present,
         contrast: contrast,
         frequency: parseFloat($("#frequency").val()),
         size_std: parseFloat($("#size-std").val()),
         position: position,
         trialTime: stimulusOff - stimulusOn,
-        response: response
     });
 
     // NEW TRIAL INFO
 
-    present = true
     //Math.random() < 0.5;
 
-    if (!present) {
-        contrast = 0;
-    } else {
-        contrast = parseInt(Math.random() * parseInt($("#steps-contrast").val()) + 1) / parseInt($("#steps-contrast").val()) * parseFloat($("#max-contrast").val()); // between 0 and 0.1
-    }
-
     // contrast = 0.2;
+    //changed last parameter to be the contrast = 1
     angle = Math.random() * 360;
-    //changed last parameter to be the contrast
-    gabor = createGabor(100, parseFloat($("#frequency").val()), angle, parseFloat($("#size-std").val()), 0.5, 1);
+    angle2 = angle;
+    gabor = createGabor(100, parseFloat($("#frequency").val()), angle, parseFloat($("#size-std").val()), 0.5, contrast);
 
     await showNoise();
     setTimeout(async function () {
@@ -467,13 +520,21 @@ async function newTrial(response) {
             rr = gabor.toDataURL("image/png").split(';base64,')[1];
             document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
 
-            document.getElementById("bottom-text").setAttribute("text", "value", "Press A for present, B for absent");
+            document.getElementById("bottom-text").setAttribute("text", "value", "Press A to increase contrast, B to decrease contrast, C to confirm");
             document.getElementById("bottom-text").setAttribute("position", "0 -25 -49");
 
             acceptingResponses = true;
             if ($("#fixed-position").prop("checked")) {
                 position = [loc[counter][0], loc[counter][1] , -50];
                 counter +=1;
+
+                // rotationAngle = $("#angle-rotation").val() * counter *Math.PI/180;
+                // x1 = Math.cos(rotationAngle) + $("#distance").val()*Math.sin(rotationAngle);
+                // y1 = -Math.sin(rotationAngle) + $("#distance").val()*Math.cos(rotationAngle);
+            
+                // console.log(rotationAngle, x1, y1);
+                // position = [x1, y1, -50];
+
                 if (counter == loc.length){
                     counter = 0;
                 }
