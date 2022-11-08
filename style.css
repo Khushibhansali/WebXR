@@ -1,0 +1,128 @@
+body {
+  margin:0;
+  background-color: rgb(26, 26, 26);
+  font-family: 'Segoe UI', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+#canvas {
+  display : block;
+  width : 100%;
+  height : 100%;
+  margin : auto;
+  padding : 0;
+  border : none;
+  background-color : red;
+  background:url(img/square.png)
+}
+
+#info{
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  background-color: rgba(0, 0, 0, 1);
+  color: white;
+  padding: 1em;
+}
+
+.button{
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  margin-bottom:10px;
+  text-align:center;
+  padding:2px;
+  cursor:pointer;
+  border:1px solid white;
+  display: block;
+  min-height:40px;
+  line-height: 40px;
+}
+.button:hover{
+  background:gray
+}
+
+#fullscreen{
+  border:1px solid greenyellow;
+}
+#fullscreen:hover{
+  background:green
+}
+
+#reset{
+  border:1px solid red
+}
+
+#reset:hover{
+  background:rgb(131, 0, 0)
+}
+
+#play{
+  border:1px solid yellow
+}
+#play:hover{
+  background:rgb(105, 105, 0)
+}
+
+input[type=text]{
+  width:55px;
+  text-align: center;
+  background:rgb(34, 34, 34);
+  border: 1px solid rgb(138, 138, 138);
+  color:white;
+  float:right;
+}
+
+input[type=checkbox]{
+  float:right;
+  width:55px;
+  height: 15px;
+}
+
+#myEnterVRButton{
+  background: rgb(32, 54, 58);
+  display: table-cell;
+  height: 100px;
+  width: 200px;
+  z-index: 100;
+  position: absolute;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 100px;
+  font-size: 300%;
+  color: white;
+  text-decoration: none;
+  border-radius: 10px;
+  border: lime 3px solid;
+  bottom: 10px;
+  right: 10px;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.experimentList{
+  background: rgb(32, 54, 58);
+  display: table-cell;
+  
+  text-align: center;
+  vertical-align: middle;
+  font-size: 300%;
+  color: white;
+  text-decoration: none;
+  border-radius: 10px;
+  border: lime 3px solid;
+  float:left;
+  margin:10px;
+  padding:10px;
+}
+
+#myEnterVRButton:hover, .experimentList:hover{
+  background:darkgreen;
+}
+
+h1{
+  font-size:300%;
+  margin-top: 30px;
+  text-align: center;
+  color:white;
+}
+
+#noise-params{
+  display:none;
+}
