@@ -37,32 +37,13 @@ AFRAME.registerComponent('button-listener', {
 
         el.addEventListener('abuttondown', function (evt) {
             if (acceptingResponses){
-                Imax += 1;
-                if (Imax % 2 == 0){
-                    Imin-=2;
-                }
-                contrast = (Imax - Imin)/ (Imax + Imin);
-
-                var gabor = createGabor(100, $("#frequency").val(), angle2, $("#size-std").val(), 0.5, contrast);
-                $("#gabor").html(gabor);
-                rr = gabor.toDataURL("image/png").split(';base64,')[1];
-                document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
+                updateGabor(1, -1);
             }
         });
 
         el.addEventListener('bbuttondown', function (evt) {
             if (acceptingResponses){
-                Imax -= 1;
-
-                if (Imax % 2 == 0){
-                    Imin+=2;
-                }
-                contrast = (Imax - Imin)/ (Imax + Imin);
-
-                var gabor = createGabor(100, $("#frequency").val(), angle2, $("#size-std").val(), 0.5, contrast);
-                $("#gabor").html(gabor);
-                rr = gabor.toDataURL("image/png").split(';base64,')[1];
-                document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
+                updateGabor(-1, 1);
             }
         });
 
@@ -200,29 +181,9 @@ $(document).ready(function () {
         let keycode = (event.keyCode ? event.keyCode : event.which);
         if (acceptingResponses) {
             if (keycode == '97') {
-                Imax += 1;
-                if (Imax % 2 == 0){
-                    Imin-=1;
-                }
-                contrast = (Imax - Imin)/ (Imax + Imin);
-
-                var gabor = createGabor(100, $("#frequency").val(), angle2, $("#size-std").val(), 0.5, contrast);
-                $("#gabor").html(gabor);
-                rr = gabor.toDataURL("image/png").split(';base64,')[1];
-                document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
+                updateGabor(1, -1);
             } if (keycode == "98") {
-                Imax -= 1;
-
-                 if (Imax % 2 == 0){
-                     Imin+=1;
-                 }
-                contrast = (Imax - Imin)/ (Imax + Imin);
-
-                var gabor = createGabor(100, $("#frequency").val(), angle2, $("#size-std").val(), 0.5, contrast);
-                $("#gabor").html(gabor);
-                rr = gabor.toDataURL("image/png").split(';base64,')[1];
-                document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
-              //  newTrial(false);
+                updateGabor(-1, 1);
             }
             if (keycode == "99"){
                 newTrial(true);
@@ -285,6 +246,18 @@ $(document).ready(function () {
 
 });
 
+function updateGabor(max, min){
+    Imax += max;
+    if (Imax % 2 == 0){
+        Imin+=min;
+    }
+    contrast = (Imax - Imin)/ (Imax + Imin);
+
+    var gabor = createGabor(100, $("#frequency").val(), angle2, $("#size-std").val(), 0.5, contrast);
+    $("#gabor").html(gabor);
+    rr = gabor.toDataURL("image/png").split(';base64,')[1];
+    document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
+}
 async function showNoise() {
     if ($("#background-noise").prop("checked"))
         var noise = await createNoiseField(1000, 128, parseFloat($("#noise-sigma").val()), parseFloat($("#gaussian-sigma").val()));
