@@ -24,7 +24,7 @@ var doubleQuit = false;
 var backgroundColor = "#7F7F7F";
 var rotationAngle = 40;
 
-var loc = [[-50, 30], [0, 30],[50, 30], [-50, 0], [0,0], [50, 0], [-50,-30], [0, -30], [50, -30]];
+var loc = [[-30, 20], [0, 20],[30, 20], [-30, 0], [0,0], [30, 0], [-30,-20], [0, -20], [30, -20]];
 
 var counter = 0;
 var angle2 = 45;
