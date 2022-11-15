@@ -75,61 +75,6 @@ AFRAME.registerComponent('button-listener', {
     }
 });
 
-AFRAME.registerComponent('thumbstick-logging', {
-    init: function () {
-        this.el.addEventListener('thumbstickmoved', this.logThumbstick);
-        this.el.addEventListener('thumbsticktouchstart', function () {
-            thumbstickMoving = true;
-        });
-        this.el.addEventListener('thumbsticktouchend', function () {
-            thumbstickMoving = false;
-        });
-    },
-    logThumbstick: function (evt) {
-        if (evt.detail.y > 0.95) {
-            console.log("DOWN");
-            if (thumbstickMoving) {
-                if (sceneNumber == 0) {
-                    $("#white-balance").attr("visible", "false");
-                    $("#main").attr("visible", "true");
-                } else if (sceneNumber == 1) {
-                    $("#main").attr("visible", "false");
-                    $("#alignment").attr("visible", "true");
-                } else {
-                    $("#alignment").attr("visible", "false");
-                    $("#white-balance").attr("visible", "true");
-                }
-                sceneNumber = sceneNumber == 2 ? 0 : sceneNumber + 1;
-                thumbstickMoving = false;
-            }
-        }
-        if (evt.detail.y < -0.95) { 
-            console.log("UP"); 
-               
-        }
-        if (evt.detail.x < -0.95) {
-            console.log("LEFT");
-            if (thumbstickMoving) {
-                // $(".flying").each(function (fs) {
-                //     speed = speed / 2;
-                //     this.setAttribute("flyaway", "speed: " + speed);
-                // });
-                thumbstickMoving = false;
-            }
-        }
-        if (evt.detail.x > 0.95) {
-            console.log("RIGHT");
-            if (thumbstickMoving) {
-                // $(".flying").each(function (fs) {
-                //     speed = speed * 2;
-                //     this.setAttribute("flyaway", "speed: " + speed);
-                // });
-                thumbstickMoving = false;
-            }
-        }
-    }
-});
-
 function toggleFullScreen() {
     if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen();
@@ -148,10 +93,6 @@ $(document).ready(function () {
         toggleFullScreen();
     });
 
-    // $('html').keypress(function (e) {
-    //     document.getElementById("keypressed").setAttribute("text", "value", e.key);
-    //     $("#keypressed").attr("text", "value", e.key);
-    // });
     rotationAngle = $("#distance").val() * Math.PI / 180;
 
     $("#main").append('<a-plane id="noise-vr" material="transparent:true;opacity:0" width="100" height="100" position="0 0 -50.1"></a-plane>');
