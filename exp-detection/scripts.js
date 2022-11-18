@@ -22,7 +22,6 @@ var acceptingResponses = false;
 var doubleQuit = false;
 
 var backgroundColor = "#7F7F7F";
-var rotationAngle = 40;
 
 var loc = [[-30, 20], [0, 20],[30, 20], [-30, 0], [0,0], [30, 0], [-30,-20], [0, -20], [30, -20]];
 var angle_pos = [-45, 90, 45, 0, 0, 0, 45, 90, -45];
@@ -96,7 +95,6 @@ $(document).ready(function () {
         toggleFullScreen();
     });
 
-    rotationAngle = $("#distance").val() * Math.PI / 180;
 
     $("#main").append('<a-plane id="noise-vr" material="transparent:true;opacity:0" width="100" height="100" position="0 0 -50.1"></a-plane>');
     $("#main").append('<a-plane id="opaque-vr" material="color:' + $('#background-color').val() + '; transparent:true;opacity:1" width="200" height="200" visible="false" position="0 0 -49.1"></a-plane>');
@@ -117,8 +115,8 @@ $(document).ready(function () {
 
 
     //trials
-    num_trials = Math.floor(((parseFloat($("#max-frequency").val())-parseFloat($("#frequency").val()))/parseFloat($("#step-frequency").val()))*loc.length);
-    trials = num_trials + ( 9 - (num_trials%9)) + 1;
+    num_trials = Math.floor((parseFloat($("#max-frequency").val())-parseFloat($("#frequency").val()) + parseFloat($("#step-frequency").val()))/parseFloat($("#step-frequency").val())) *loc.length;
+    trials = num_trials + 1;
 
     stimulusOn = Date.now();
     acceptingResponses = true;
@@ -397,8 +395,12 @@ async function newTrial(response) {
     stimulusOff = Date.now();
     acceptingResponses = false;
     
+    num_trials = Math.floor((parseFloat($("#max-frequency").val())-parseFloat($("#frequency").val()) + parseFloat($("#step-frequency").val()))/parseFloat($("#step-frequency").val())) *loc.length;
+    trials = num_trials + 1;
+    
     // document.getElementById("opaque-vr").setAttribute("material", "opacity", "1");
     $("#opaque-vr").attr("visible", "true");
+    console.log("something", trials);
     document.getElementById("bottom-text").setAttribute("text", "value", "\n\n" + (responses.length + 1) + "/" + trials);
     document.getElementById("bottom-text").setAttribute("position", "0 0 -49");
     document.getElementById("gabor-vr").setAttribute("material", "opacity", "0");
@@ -449,7 +451,7 @@ async function newTrial(response) {
 
             acceptingResponses = true;
             if ($("#fixed-position").prop("checked")) {
-                position = [loc[counter][0], loc[counter][1] , -50];
+                position = [loc[counter][0], loc[counter][1] , parseFloat($("#distance").val())];
                 counter +=1;
 
                 // rotationAngle = $("#angle-rotation").val() * counter *Math.PI/180;
