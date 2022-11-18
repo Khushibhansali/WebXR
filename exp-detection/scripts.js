@@ -160,6 +160,16 @@ $(document).ready(function () {
         angle2 = angle;
     });
 
+    $("#angle-rotation").keyup(function () {
+        rad = parseFloat($("#angle-rotation").val()) * (Math.PI / 180);
+        index = 0;
+        while (index < loc.length){
+                loc[index][0] += Math.tan(rad);
+                loc[index+2][0] += Math.tan(rad);
+            index+=3;
+        }
+    });
+
     $("#background-noise").change(function () {
         showNoise();
         if ($("#background-noise").prop("checked"))
@@ -394,13 +404,13 @@ function contrastImage(imageData, contrast) {
 async function newTrial(response) {
     stimulusOff = Date.now();
     acceptingResponses = false;
-    
+
     num_trials = Math.floor((parseFloat($("#max-frequency").val())-parseFloat($("#frequency").val()) + parseFloat($("#step-frequency").val()))/parseFloat($("#step-frequency").val())) *loc.length;
     trials = num_trials + 1;
     
+      
     // document.getElementById("opaque-vr").setAttribute("material", "opacity", "1");
     $("#opaque-vr").attr("visible", "true");
-    console.log("something", trials);
     document.getElementById("bottom-text").setAttribute("text", "value", "\n\n" + (responses.length + 1) + "/" + trials);
     document.getElementById("bottom-text").setAttribute("position", "0 0 -49");
     document.getElementById("gabor-vr").setAttribute("material", "opacity", "0");
@@ -423,7 +433,6 @@ async function newTrial(response) {
         frequency += parseFloat($("#step-frequency").val());
     }
 
-  //  console.log(frequency, responses.length);
     gabor = createGabor(100, frequency, angle, parseFloat($("#size-std").val()), 0.5, contrast);
 
     await showNoise();
@@ -451,15 +460,8 @@ async function newTrial(response) {
 
             acceptingResponses = true;
             if ($("#fixed-position").prop("checked")) {
-                position = [loc[counter][0], loc[counter][1] , parseFloat($("#distance").val())];
+                position = [loc[counter][0], loc[counter][1] ,-50];
                 counter +=1;
-
-                // rotationAngle = $("#angle-rotation").val() * counter *Math.PI/180;
-                // x1 = Math.cos(rotationAngle) + $("#distance").val()*Math.sin(rotationAngle);
-                // y1 = -Math.sin(rotationAngle) + $("#distance").val()*Math.cos(rotationAngle);
-            
-                // console.log(rotationAngle, x1, y1);
-                // position = [x1, y1, -50];
 
                 if (counter == loc.length){
                     counter = 0;
