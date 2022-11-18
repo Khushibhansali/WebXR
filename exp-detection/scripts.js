@@ -25,11 +25,14 @@ var backgroundColor = "#7F7F7F";
 var rotationAngle = 40;
 
 var loc = [[-30, 20], [0, 20],[30, 20], [-30, 0], [0,0], [30, 0], [-30,-20], [0, -20], [30, -20]];
+var angle_pos = [-45, 90, 45, 0, 0, 0, 45, 90, -45];
 
 var counter = 0;
-var angle2 = 45;
+var angle2 = angle_pos[counter];
 var Imax = 132;
 var Imin = 122;
+var trials = 10;
+var frequency = 0;
 
 AFRAME.registerComponent('button-listener', {
     init: function () {
@@ -98,7 +101,9 @@ $(document).ready(function () {
     $("#main").append('<a-plane id="noise-vr" material="transparent:true;opacity:0" width="100" height="100" position="0 0 -50.1"></a-plane>');
     $("#main").append('<a-plane id="opaque-vr" material="color:' + $('#background-color').val() + '; transparent:true;opacity:1" width="200" height="200" visible="false" position="0 0 -49.1"></a-plane>');
 
-    var gabor = createGabor(100, 0.1, 45, 10, 0.5, 1);
+    frequency = parseFloat($("#frequency").val());
+
+    var gabor = createGabor(100, frequency, 45, 10, 0.5, 1);
 
     $("#gabor").append(gabor);
     rr = gabor.toDataURL("image/png").split(';base64,')[1];
@@ -111,6 +116,9 @@ $(document).ready(function () {
     $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="7 0 -50"></a-plane>');
 
 
+    //trials
+    num_trials = Math.floor(((parseFloat($("#max-frequency").val())-parseFloat($("#frequency").val()))/parseFloat($("#step-frequency").val()))*loc.length);
+    trials = num_trials + ( 9 - (num_trials%9)) + 1;
 
     stimulusOn = Date.now();
     acceptingResponses = true;
@@ -137,7 +145,8 @@ $(document).ready(function () {
     });
 
     $("#size-std").keyup(function () {
-        var gabor = createGabor(100, $("#frequency").val(), 45, $("#size-std").val(), 0.5, 1);
+        angle = angle_pos[counter];
+        var gabor = createGabor(100, frequency, angle, $("#size-std").val(), 0.5, 1);
         $("#gabor").html(gabor);
         rr = gabor.toDataURL("image/png").split(';base64,')[1];
         document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
@@ -145,7 +154,8 @@ $(document).ready(function () {
     });
 
     $("#frequency").keyup(function () {
-        var gabor = createGabor(100, $("#frequency").val(), 45, $("#size-std").val(), 0.5, 1);
+        angle = angle_pos[counter];
+        var gabor = createGabor(100, frequency, angle, $("#size-std").val(), 0.5, 1);
         $("#gabor").html(gabor);
         rr = gabor.toDataURL("image/png").split(';base64,')[1];
         document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
@@ -193,8 +203,7 @@ function updateGabor(max, min){
         Imin+=min;
     }
     contrast = (Imax - Imin)/ (Imax + Imin);
-
-    var gabor = createGabor(100, $("#frequency").val(), angle2, $("#size-std").val(), 0.5, contrast);
+    var gabor = createGabor(100, frequency, angle2, $("#size-std").val(), 0.5, contrast);
     $("#gabor").html(gabor);
     rr = gabor.toDataURL("image/png").split(';base64,')[1];
     document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
@@ -360,7 +369,6 @@ function createGabor(side, frequency, orientation, std, phase, contrast) {
             amp = 0.5 + 0.5 * Math.cos(2 * Math.PI * (xx * frequency + phase));
             f = Math.exp(-0.5 * Math.pow((xx) /(std), 2) - 0.5 * Math.pow((yy) / (std), 2));
 
-          //  console.log(c, f);
             c+=1;
             idata.data[(y * side + x) * 4] = 255 * (amp);     // red
             idata.data[(y * side + x) * 4 + 1] = 255 * (amp); // green
@@ -391,7 +399,7 @@ async function newTrial(response) {
     
     // document.getElementById("opaque-vr").setAttribute("material", "opacity", "1");
     $("#opaque-vr").attr("visible", "true");
-    document.getElementById("bottom-text").setAttribute("text", "value", "\n\n" + (responses.length + 1) + "/" + parseInt($("#num-trials").val()));
+    document.getElementById("bottom-text").setAttribute("text", "value", "\n\n" + (responses.length + 1) + "/" + trials);
     document.getElementById("bottom-text").setAttribute("position", "0 0 -49");
     document.getElementById("gabor-vr").setAttribute("material", "opacity", "0");
     Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "0") });
@@ -399,25 +407,26 @@ async function newTrial(response) {
     document.getElementById("noise-vr").setAttribute("material", "opacity", "0");
     responses.push({
         contrast: contrast,
-        frequency: parseFloat($("#frequency").val()),
+        frequency: frequency,
         size_std: parseFloat($("#size-std").val()),
         position: position,
         trialTime: stimulusOff - stimulusOn,
     });
 
     // NEW TRIAL INFO
-
-    //Math.random() < 0.5;
-
-    // contrast = 0.2;
-    //changed last parameter to be the contrast = 1
-    angle = Math.random() * 360;
+    angle = angle_pos[counter];
     angle2 = angle;
-    gabor = createGabor(100, parseFloat($("#frequency").val()), angle, parseFloat($("#size-std").val()), 0.5, contrast);
+
+    if(responses.length >= 10 && ((responses.length - 10)%9==0)){
+        frequency += parseFloat($("#step-frequency").val());
+    }
+
+  //  console.log(frequency, responses.length);
+    gabor = createGabor(100, frequency, angle, parseFloat($("#size-std").val()), 0.5, contrast);
 
     await showNoise();
     setTimeout(async function () {
-        if (responses.length >= parseInt($("#num-trials").val())) {
+        if (responses.length >= trials) {
             // END EXPERIMENT!
             document.getElementById("bottom-text").setAttribute("text", "value", "EXPERIMENT FINISHED!\n\nThanks for playing :)");
             json = {};
@@ -431,6 +440,7 @@ async function newTrial(response) {
 
             downloadObjectAsJson(json, json["participant-id"] + "-" + Date.now());
         } else {
+          
             rr = gabor.toDataURL("image/png").split(';base64,')[1];
             document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
 
