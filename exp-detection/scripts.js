@@ -99,18 +99,15 @@ AFRAME.registerComponent('thumbstick-logging', {
             }
         }
         if (evt.detail.y < -0.95) { 
-            console.log("UP");
         if (acceptingResponses){
             newTrial(true);
         } }
         if (evt.detail.x < -0.95) {
-            console.log("LEFT");
             if (acceptingResponses){
                 newTrial(true);
             }
         }
         if (evt.detail.x > 0.95) {
-            console.log("RIGHT");
             if (acceptingResponses){
                 newTrial(true);
             }
@@ -206,18 +203,33 @@ $(document).ready(function () {
 
         rad = parseFloat($("#angle-rotation").val()) * (Math.PI / 180);
         index = 0;
-        while (index < loc.length){
-            console.log(loc[index][0], loc[index][1], parseFloat($("#distance").val()))
+        while (index < loc.length-1){
 
-            loc[index][0] = parseFloat($("#distance").val())* Math.tan(rad);
-         if (index%2 == 0){
-             rad*=-1;
-         }
+           loc[index][0] = parseFloat($("#distance").val())* Math.tan(rad);
+           if (index >= 4 && index < 6){
+                loc[index][0] = 0;
+                rad*=-1;
+           }
+        
+           if (index%2 == 0){
+                rad*=-1;
+            }
             loc[index][1] = parseFloat($("#distance").val())* Math.tan(rad);
-            console.log(loc[index][0], loc[index][1], parseFloat($("#distance").val()))
+            if (index >= 6){
+                loc[index][1] = 0;
+           }
+            console.log(index, loc[index][0], loc[index][1], parseFloat($("#distance").val()));
 
             index+=1;
+
+            if (index == 4){
+                rad/=-2;
+            }
+    
      }
+        loc[index][0] = 0;
+        loc[index][1] = 0;
+        console.log("last", loc[index][0], loc[index][1], parseFloat($("#distance").val()));
     });
 
     $("#background-noise").change(function () {
