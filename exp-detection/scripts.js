@@ -207,7 +207,11 @@ $(document).ready(function () {
         index = 0;
         while (index < loc.length){
                 loc[index][0] = parseFloat($("#distance").val())* Math.tan(rad);
-                loc[index+1][0] = arseFloat($("#distance").val())* Math.tan(rad);
+                loc[index+1][0] = parseFloat($("#distance").val())* Math.tan(rad);
+            
+            if (index%2 == 0){
+                rad*=-1;
+            }
             index+=1;
         }
     });
