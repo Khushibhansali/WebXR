@@ -24,7 +24,7 @@ var doubleQuit = false;
 var backgroundColor = "#7F7F7F";
 
 var loc = [[-15, 15], [0, 15],[15, 15], [-15, 0], [0,0], [15, 0], [-15,-15], [0, -15], [15, -15]];
-var angle_pos = [-45, 90, 45, 0, 0, 0, 45, 90, -45];
+var angle_pos = [-45, 45, -45, 45, 90, 90, 0, 0, 0];
 
 var counter = 0;
 var angle2 = angle_pos[counter];
@@ -200,7 +200,6 @@ $(document).ready(function () {
     });
 
     $("#angle-rotation").change(function () {
-
         rad = parseFloat($("#angle-rotation").val()) * (Math.PI / 180);
         index = 0;
         while (index < loc.length-1){
@@ -218,18 +217,10 @@ $(document).ready(function () {
             if (index >= 6){
                 loc[index][1] = 0;
            }
-            console.log(index, loc[index][0], loc[index][1], parseFloat($("#distance").val()));
-
-            index+=1;
-
-            if (index == 4){
-                rad/=-2;
-            }
-    
+            index+=1;    
      }
         loc[index][0] = 0;
         loc[index][1] = 0;
-        console.log("last", loc[index][0], loc[index][1], parseFloat($("#distance").val()));
     });
 
     $("#background-noise").change(function () {
