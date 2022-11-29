@@ -12,7 +12,7 @@ var sceneNumber = 0;
 var prev_time = 0;
 
 var responses = [];
-var contrast = 1, position = [0, 0, -50];
+var contrast = 1, position = [0, 0, -150];
 var stimulusOn = -1, stimulusOff = -1;
 
 var positionVariation = 70;
@@ -138,7 +138,7 @@ $(document).ready(function () {
     });
 
 
-    $("#main").append('<a-plane id="noise-vr" material="transparent:true;opacity:0" width="100" height="100" position="0 0 -50.1"></a-plane>');
+    $("#main").append('<a-plane id="noise-vr" material="transparent:true;opacity:0" width="100" height="100" position="0 0 -150.1"></a-plane>');
     $("#main").append('<a-plane id="opaque-vr" material="color:' + $('#background-color').val() + '; transparent:true;opacity:1" width="200" height="200" visible="false" position="0 0 -49.1"></a-plane>');
 
     frequency = parseFloat($("#frequency").val());
@@ -150,10 +150,10 @@ $(document).ready(function () {
     $("#main").append('<a-plane id="gabor-vr" material="src:url(data:image/png;base64,' + rr + ');transparent:true;opacity:1" width="10" height="10" position="0 0 -50"></a-plane>');
 
     // cues
-    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width=".5" height="3" position="0 -7 -50"></a-plane>');
-    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width=".5" height="3" position="0 7 -50"></a-plane>');
-    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="-7 0 -50"></a-plane>');
-    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="7 0 -50"></a-plane>');
+    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width=".5" height="3" position="0 -7 -150"></a-plane>');
+    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width=".5" height="3" position="0 7 -150"></a-plane>');
+    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="-7 0 -150"></a-plane>');
+    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="7 0 -150"></a-plane>');
 
 
     //trials
@@ -206,13 +206,13 @@ $(document).ready(function () {
         rad = parseFloat($("#angle-rotation").val()) * (Math.PI / 180);
         index = 0;
         while (index < loc.length){
-             //   loc[index][0] = parseFloat($("#distance").val())* Math.tan(rad);
-             //   loc[index+1][0] = parseFloat($("#distance").val())* Math.tan(rad);
-            
+         
+               loc[index][0] = parseFloat($("#distance").val())* Math.tan(rad);
             if (index%2 == 0){
                 rad*=-1;
             }
-            index+=1;
+               loc[index+1][0] = parseFloat($("#distance").val())* Math.tan(rad);
+             index+=1;
         }
     });
 
