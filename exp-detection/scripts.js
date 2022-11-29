@@ -12,7 +12,7 @@ var sceneNumber = 0;
 var prev_time = 0;
 
 var responses = [];
-var contrast = 1, position = [0, 0, -150];
+var contrast = 1, position = [0, 0, -50];
 var stimulusOn = -1, stimulusOff = -1;
 
 var positionVariation = 70;
@@ -138,7 +138,7 @@ $(document).ready(function () {
     });
 
 
-    $("#main").append('<a-plane id="noise-vr" material="transparent:true;opacity:0" width="100" height="100" position="0 0 -150.1"></a-plane>');
+    $("#main").append('<a-plane id="noise-vr" material="transparent:true;opacity:0" width="100" height="100" position="0 0 -50.1"></a-plane>');
     $("#main").append('<a-plane id="opaque-vr" material="color:' + $('#background-color').val() + '; transparent:true;opacity:1" width="200" height="200" visible="false" position="0 0 -49.1"></a-plane>');
 
     frequency = parseFloat($("#frequency").val());
@@ -147,13 +147,13 @@ $(document).ready(function () {
 
     $("#gabor").append(gabor);
     rr = gabor.toDataURL("image/png").split(';base64,')[1];
-    $("#main").append('<a-plane id="gabor-vr" material="src:url(data:image/png;base64,' + rr + ');transparent:true;opacity:1" width="10" height="10" position="0 0 -150"></a-plane>');
+    $("#main").append('<a-plane id="gabor-vr" material="src:url(data:image/png;base64,' + rr + ');transparent:true;opacity:1" width="10" height="10" position="0 0 -50"></a-plane>');
 
     // cues
-    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width=".5" height="3" position="0 -7 -150"></a-plane>');
-    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width=".5" height="3" position="0 7 -150"></a-plane>');
-    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="-7 0 -150"></a-plane>');
-    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="7 0 -150"></a-plane>');
+    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width=".5" height="3" position="0 -7 -50"></a-plane>');
+    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width=".5" height="3" position="0 7 -50"></a-plane>');
+    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="-7 0 -50"></a-plane>');
+    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="7 0 -50"></a-plane>');
 
 
     //trials
@@ -511,7 +511,7 @@ async function newTrial(response) {
 
             acceptingResponses = true;
             if ($("#fixed-position").prop("checked")) {
-                position = [loc[counter][0], loc[counter][1] ,-150];
+                position = [loc[counter][0], loc[counter][1] ,-50];
                 counter +=1;
 
                 if (counter == loc.length){
