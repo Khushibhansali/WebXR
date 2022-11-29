@@ -23,7 +23,7 @@ var doubleQuit = false;
 
 var backgroundColor = "#7F7F7F";
 
-var loc = [[-30, 20], [0, 20],[30, 20], [-30, 0], [0,0], [30, 0], [-30,-20], [0, -20], [30, -20]];
+var loc = [[-40, 25], [0, 25],[40, 25], [-40, 0], [0,0], [40, 0], [-40,-25], [0, -25], [40, -25]];
 var angle_pos = [-45, 90, 45, 0, 0, 0, 45, 90, -45];
 
 var counter = 0;
@@ -50,16 +50,21 @@ AFRAME.registerComponent('button-listener', {
         });
 
         el.addEventListener('xbuttondown', function(evt){
-            if (acceptingResponses)
+            if (acceptingResponses){
                 newTrial(true);
+            }
         });
 
         el.addEventListener('trackpadchanged', function (evt) {
-
+            if (acceptingResponses){
+                newTrial(true);
+            }
         });
 
         el.addEventListener('triggerdown', function (evt) {
-
+            if (acceptingResponses){
+                newTrial(true);
+            }
         });
 
         el.addEventListener('gripdown', function (evt) {
@@ -76,6 +81,43 @@ AFRAME.registerComponent('button-listener', {
         });
     }
 });
+
+AFRAME.registerComponent('thumbstick-logging', {
+    init: function () {
+        this.el.addEventListener('thumbstickmoved', this.logThumbstick);
+        this.el.addEventListener('thumbsticktouchstart', function () {
+            thumbstickMoving = true;
+        });
+        this.el.addEventListener('thumbsticktouchend', function () {
+            thumbstickMoving = false;
+        });
+    },
+    logThumbstick: function (evt) {
+        if (evt.detail.y > 0.95) {
+            if (acceptingResponses){
+                newTrial(true);
+            }
+        }
+        if (evt.detail.y < -0.95) { 
+            console.log("UP");
+        if (acceptingResponses){
+            newTrial(true);
+        } }
+        if (evt.detail.x < -0.95) {
+            console.log("LEFT");
+            if (acceptingResponses){
+                newTrial(true);
+            }
+        }
+        if (evt.detail.x > 0.95) {
+            console.log("RIGHT");
+            if (acceptingResponses){
+                newTrial(true);
+            }
+        }
+    }
+});
+
 
 function toggleFullScreen() {
     if (!document.fullscreenElement) {
@@ -455,7 +497,12 @@ async function newTrial(response) {
             rr = gabor.toDataURL("image/png").split(';base64,')[1];
             document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
 
-            document.getElementById("bottom-text").setAttribute("text", "value", "Press A to increase contrast, B to decrease contrast, C to confirm");
+            if((responses.length - 10)%8!=0 || (responses.length - 10)%7!=0){
+                document.getElementById("bottom-text").setAttribute("text", "value", "Press A to increase contrast, B to decrease contrast, C to confirm");
+            }else{
+                document.getElementById("bottom-text").setAttribute("text", "value", "");
+            }
+
             document.getElementById("bottom-text").setAttribute("position", "0 -25 -49");
 
             acceptingResponses = true;
