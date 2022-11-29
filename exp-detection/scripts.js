@@ -23,7 +23,7 @@ var doubleQuit = false;
 
 var backgroundColor = "#7F7F7F";
 
-var loc = [[-20, 25], [0, 25],[20, 25], [-20, 0], [0,0], [20, 0], [-20,-25], [0, -25], [20, -25]];
+var loc = [[-15, 15], [0, 15],[15, 15], [-15, 0], [0,0], [15, 0], [-15,-15], [0, -15], [15, -15]];
 var angle_pos = [-45, 90, 45, 0, 0, 0, 45, 90, -45];
 
 var counter = 0;
@@ -206,9 +206,9 @@ $(document).ready(function () {
         rad = parseFloat($("#angle-rotation").val()) * (Math.PI / 180);
         index = 0;
         while (index < loc.length){
-                loc[index][0] += Math.tan(rad);
-                loc[index+2][0] += Math.tan(rad);
-            index+=3;
+                loc[index][0] = parseFloat($("#distance").val())* Math.tan(rad);
+                loc[index+1][0] = arseFloat($("#distance").val())* Math.tan(rad);
+            index+=1;
         }
     });
 
