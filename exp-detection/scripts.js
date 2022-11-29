@@ -147,7 +147,7 @@ $(document).ready(function () {
 
     $("#gabor").append(gabor);
     rr = gabor.toDataURL("image/png").split(';base64,')[1];
-    $("#main").append('<a-plane id="gabor-vr" material="src:url(data:image/png;base64,' + rr + ');transparent:true;opacity:1" width="10" height="10" position="0 0 -50"></a-plane>');
+    $("#main").append('<a-plane id="gabor-vr" material="src:url(data:image/png;base64,' + rr + ');transparent:true;opacity:1" width="10" height="10" position="0 0 -150"></a-plane>');
 
     // cues
     $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width=".5" height="3" position="0 -7 -150"></a-plane>');
@@ -193,7 +193,7 @@ $(document).ready(function () {
         angle2 = angle;
     });
 
-    $("#frequency").keyup(function () {
+    $("#frequency").change(function () {
         angle = angle_pos[counter];
         var gabor = createGabor(100, frequency, angle, $("#size-std").val(), 0.5, 1);
         $("#gabor").html(gabor);
@@ -202,18 +202,22 @@ $(document).ready(function () {
         angle2 = angle;
     });
 
-    $("#angle-rotation").keyup(function () {
+    $("#angle-rotation").change(function () {
+
         rad = parseFloat($("#angle-rotation").val()) * (Math.PI / 180);
         index = 0;
         while (index < loc.length){
-         
-               loc[index][0] = parseFloat($("#distance").val())* Math.tan(rad);
-            if (index%2 == 0){
-                rad*=-1;
-            }
-               loc[index+1][0] = parseFloat($("#distance").val())* Math.tan(rad);
-             index+=1;
-        }
+            console.log(loc[index][0], loc[index][1], parseFloat($("#distance").val()))
+
+            loc[index][0] = parseFloat($("#distance").val())* Math.tan(rad);
+         if (index%2 == 0){
+             rad*=-1;
+         }
+            loc[index][1] = parseFloat($("#distance").val())* Math.tan(rad);
+            console.log(loc[index][0], loc[index][1], parseFloat($("#distance").val()))
+
+            index+=1;
+     }
     });
 
     $("#background-noise").change(function () {
@@ -477,6 +481,7 @@ async function newTrial(response) {
 
     if(responses.length >= 10 && ((responses.length - 10)%9==0)){
         frequency += parseFloat($("#step-frequency").val());
+        contrast = 1;
     }
 
     gabor = createGabor(100, frequency, angle, parseFloat($("#size-std").val()), 0.5, contrast);
@@ -511,7 +516,7 @@ async function newTrial(response) {
 
             acceptingResponses = true;
             if ($("#fixed-position").prop("checked")) {
-                position = [loc[counter][0], loc[counter][1] ,-50];
+                position = [loc[counter][0], loc[counter][1] ,-150];
                 counter +=1;
 
                 if (counter == loc.length){
@@ -530,7 +535,7 @@ async function newTrial(response) {
 
             }   
             if ($("#random-location").prop("checked")) {
-                position = [Math.random() * positionVariation - positionVariation / 2, Math.random() * positionVariation - positionVariation / 2, -50];
+                position = [Math.random() * positionVariation - positionVariation / 2, Math.random() * positionVariation - positionVariation / 2, -150];
                 document.getElementById("gabor-vr").setAttribute("position", position.join(" "));
                 Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "0") });
             }
