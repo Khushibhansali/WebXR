@@ -25,7 +25,7 @@ var backgroundColor = "#7F7F7F";
 
 var loc = [[-1, 1], [0, 1],[1, 1], [-1, 0], [0,0], [1, 0], [-1,-1], [0, -1], [1, -1]];
 
-var angle_pos = [-45, 45, -45, 45, 90, 90, 0, 0, 0];
+var angle_pos = [-45, 90, 45, 0, 0, 0, 45, 90, -45];
 
 var counter = 0;
 var angle2 = angle_pos[counter];
@@ -473,7 +473,6 @@ async function newTrial(response) {
     // NEW TRIAL INFO
     angle = angle_pos[counter];
     angle2 = angle;
-    contrast = 1;
     Imax = 132;
     Imin = 122;
 
