@@ -23,7 +23,9 @@ var doubleQuit = false;
 
 var backgroundColor = "#7F7F7F";
 
-var loc = [[-15, 15], [0, 15],[15, 15], [-15, 0], [0,0], [15, 0], [-15,-15], [0, -15], [15, -15]];
+//var loc = [[-15, 15], [0, 15],[15, 15], [-15, 0], [0,0], [15, 0], [-15,-15], [0, -15], [15, -15]];
+var loc = [[-1, 1], [0, 1],[1, 1], [-1, 0], [0,0], [1, 0], [-1,-1], [0, -1], [1, -1]];
+
 var angle_pos = [-45, 45, -45, 45, 90, 90, 0, 0, 0];
 
 var counter = 0;
@@ -192,35 +194,26 @@ $(document).ready(function () {
 
     $("#frequency").change(function () {
         angle = angle_pos[counter];
-        var gabor = createGabor(100, frequency, angle, $("#size-std").val(), 0.5, 1);
+        var gabor = createGabor(100, parseFloat($("#frequency").val()), angle, $("#size-std").val(), 0.5, 1);
+        frequency = parseFloat($("#frequency").val());
         $("#gabor").html(gabor);
         rr = gabor.toDataURL("image/png").split(';base64,')[1];
         document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
         angle2 = angle;
     });
 
-    $("#angle-rotation").change(function () {
-        rad = parseFloat($("#angle-rotation").val()) * (Math.PI / 180);
-        index = 0;
-        while (index < loc.length-1){
+    $("#distance").change(function () {
 
-           loc[index][0] = parseFloat($("#distance").val())* Math.tan(rad);
-           if (index >= 4 && index < 6){
-                loc[index][0] = 0;
-                rad*=-1;
-           }
-        
-           if (index%2 == 0){
-                rad*=-1;
-            }
-            loc[index][1] = parseFloat($("#distance").val())* Math.tan(rad);
-            if (index >= 6){
-                loc[index][1] = 0;
-           }
+        distance = parseFloat($("#distance").val());
+        index = 0;
+        while (index < loc.length){
+
+            loc[index][0] *= distance;
+            loc[index][1] *= distance;
+            console.log(index, loc[index][0], loc[index][1], parseFloat($("#distance").val()));
+
             index+=1;    
      }
-        loc[index][0] = 0;
-        loc[index][1] = 0;
     });
 
     $("#background-noise").change(function () {
@@ -481,10 +474,12 @@ async function newTrial(response) {
     // NEW TRIAL INFO
     angle = angle_pos[counter];
     angle2 = angle;
+    contrast = 1;
+    Imax = 132;
+    Imin = 122;
 
     if(responses.length >= 10 && ((responses.length - 10)%9==0)){
         frequency += parseFloat($("#step-frequency").val());
-        contrast = 1;
     }
 
     gabor = createGabor(100, frequency, angle, parseFloat($("#size-std").val()), 0.5, contrast);
