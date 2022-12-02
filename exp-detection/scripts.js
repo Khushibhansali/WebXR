@@ -202,7 +202,21 @@ $(document).ready(function () {
         document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
         angle2 = angle;
     });
-    
+
+    $("#distance").change(function () {
+
+        distance = parseFloat($("#distance").val());
+        index = 0;
+        while (index < loc.length){
+
+            loc[index][0] *= distance;
+            loc[index][1] *= distance;
+            console.log(index, loc[index][0], loc[index][1], parseFloat($("#distance").val()));
+
+            index+=1;    
+     }
+    });
+
     $("#background-noise").change(function () {
         showNoise();
         if ($("#background-noise").prop("checked"))
@@ -311,19 +325,6 @@ function createNoiseField(side, mean, std, gaussian) {
 
         resolve(noise);
     });
-}
-
-function location(){
-    distance = parseFloat($("#distance").val());
-    index = 0;
-    while (index < loc.length){
-
-        loc[index][0] *= distance;
-        loc[index][1] *= distance;
-        console.log(index, loc[index][0], loc[index][1], parseFloat($("#distance").val()));
-
-        index+=1;    
-    }
 }
 
 function makeGaussKernel(sigma) {
@@ -450,7 +451,6 @@ function contrastImage(imageData, contrast) {
 async function newTrial(response) {
     stimulusOff = Date.now();
     acceptingResponses = false;
-    location();
 
     num_trials = Math.floor((parseFloat($("#max-frequency").val())-parseFloat($("#frequency").val()) + parseFloat($("#step-frequency").val()))/parseFloat($("#step-frequency").val())) *loc.length;
     trials = num_trials + 1;
