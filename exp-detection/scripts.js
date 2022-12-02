@@ -205,7 +205,7 @@ $(document).ready(function () {
         while (index < loc.length){
 
             loc[index][0] *= distance;
-            loc[index][1] *= distance;
+            loc[index][1] = loc[index][1] * distance + 10;
             console.log(index, loc[index][0], loc[index][1], parseFloat($("#distance").val()));
 
             index+=1;    
@@ -455,7 +455,7 @@ async function newTrial(response) {
     $("#opaque-vr").attr("visible", "true");
     document.getElementById("bottom-text").setAttribute("text", "value", "\n\n" + (responses.length + 1) + "/" + trials);
     console.log(responses.length+1, trials);
-    document.getElementById("bottom-text").setAttribute("position", "0 0 -150");
+    document.getElementById("bottom-text").setAttribute("position", "0 0 -49");
     document.getElementById("gabor-vr").setAttribute("material", "opacity", "0");
     Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "0") });
     document.getElementById("sky").setAttribute("color", "rgb(0,0,0)");
