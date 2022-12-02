@@ -144,7 +144,7 @@ $(document).ready(function () {
 
     $("#gabor").append(gabor);
     rr = gabor.toDataURL("image/png").split(';base64,')[1];
-    $("#main").append('<a-plane id="gabor-vr" material="src:url(data:image/png;base64,' + rr + ');transparent:true;opacity:1" width="10" height="10" position="0 0 -150"></a-plane>');
+    $("#main").append('<a-plane id="gabor-vr" material="src:url(data:image/png;base64,' + rr + ');transparent:true;opacity:1" width="10" height="10" position="0 -10 -150"></a-plane>');
 
     // cues
     $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width=".5" height="3" position="0 -7 -150"></a-plane>');
@@ -205,7 +205,7 @@ $(document).ready(function () {
         while (index < loc.length){
 
             loc[index][0] *= distance;
-            loc[index][1] = loc[index][1] * distance + 10;
+            loc[index][1] = loc[index][1] * distance - 10;
             console.log(index, loc[index][0], loc[index][1], parseFloat($("#distance").val()));
 
             index+=1;    
