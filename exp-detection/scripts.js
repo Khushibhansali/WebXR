@@ -23,10 +23,9 @@ var doubleQuit = false;
 
 var backgroundColor = "#7F7F7F";
 
-//var loc = [[-15, 15], [0, 15],[15, 15], [-15, 0], [0,0], [15, 0], [-15,-15], [0, -15], [15, -15]];
 var loc = [[0,0], [-1, 1], [0, 1],[1, 1], [-1, 0], [1, 0], [-1,-1], [0, -1], [1, -1]];
 
-var angle_pos = [-45, 45, -45, 45, 90, 90, 0, 0, 0];
+var angle_pos = [90, -45, 45, -45, 45, 90, 0, 0, 0];
 
 var counter = 0;
 var angle2 = angle_pos[counter];
@@ -203,7 +202,7 @@ $(document).ready(function () {
         angle2 = angle;
     });
 
-    $("#distance").change(function () {
+    $("#distance").keyup(function () {
 
         distance = parseFloat($("#distance").val());
         index = 0;
