@@ -23,9 +23,10 @@ var doubleQuit = false;
 
 var backgroundColor = "#7F7F7F";
 
-var loc = [[-1, 1], [0, 1],[1, 1], [-1, 0], [0,0], [1, 0], [-1,-1], [0, -1], [1, -1]];
+//var loc = [[-15, 15], [0, 15],[15, 15], [-15, 0], [0,0], [15, 0], [-15,-15], [0, -15], [15, -15]];
+var loc = [[0,0], [-1, 1], [0, 1],[1, 1], [-1, 0], [1, 0], [-1,-1], [0, -1], [1, -1]];
 
-var angle_pos = [-45, 90, 45, 0, 0, 0, 45, 90, -45];
+var angle_pos = [-45, 45, -45, 45, 90, 90, 0, 0, 0];
 
 var counter = 0;
 var angle2 = angle_pos[counter];
@@ -137,6 +138,7 @@ $(document).ready(function () {
 
 
     $("#main").append('<a-plane id="noise-vr" material="transparent:true;opacity:0" width="100" height="100" position="0 0 -150.1"></a-plane>');
+
     $("#main").append('<a-plane id="opaque-vr" material="color:' + $('#background-color').val() + '; transparent:true;opacity:1" width="200" height="200" visible="false" position="0 0 -49.1"></a-plane>');
 
     frequency = parseFloat($("#frequency").val());
@@ -200,21 +202,7 @@ $(document).ready(function () {
         document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
         angle2 = angle;
     });
-
-    $("#distance").change(function () {
-
-        distance = parseFloat($("#distance").val());
-        index = 0;
-        while (index < loc.length){
-
-            loc[index][0] *= distance;
-            loc[index][1] *= distance;
-            console.log(index, loc[index][0], loc[index][1], parseFloat($("#distance").val()));
-
-            index+=1;    
-     }
-    });
-
+    
     $("#background-noise").change(function () {
         showNoise();
         if ($("#background-noise").prop("checked"))
@@ -323,6 +311,19 @@ function createNoiseField(side, mean, std, gaussian) {
 
         resolve(noise);
     });
+}
+
+function location(){
+    distance = parseFloat($("#distance").val());
+    index = 0;
+    while (index < loc.length){
+
+        loc[index][0] *= distance;
+        loc[index][1] *= distance;
+        console.log(index, loc[index][0], loc[index][1], parseFloat($("#distance").val()));
+
+        index+=1;    
+    }
 }
 
 function makeGaussKernel(sigma) {
@@ -449,30 +450,33 @@ function contrastImage(imageData, contrast) {
 async function newTrial(response) {
     stimulusOff = Date.now();
     acceptingResponses = false;
+    location();
 
     num_trials = Math.floor((parseFloat($("#max-frequency").val())-parseFloat($("#frequency").val()) + parseFloat($("#step-frequency").val()))/parseFloat($("#step-frequency").val())) *loc.length;
     trials = num_trials + 1;
-    
       
     // document.getElementById("opaque-vr").setAttribute("material", "opacity", "1");
     $("#opaque-vr").attr("visible", "true");
     document.getElementById("bottom-text").setAttribute("text", "value", "\n\n" + (responses.length + 1) + "/" + trials);
-    document.getElementById("bottom-text").setAttribute("position", "0 0 -49");
+    document.getElementById("bottom-text").setAttribute("position", "0 0 -150");
     document.getElementById("gabor-vr").setAttribute("material", "opacity", "0");
     Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "0") });
     document.getElementById("sky").setAttribute("color", "rgb(0,0,0)");
     document.getElementById("noise-vr").setAttribute("material", "opacity", "0");
-    responses.push({
-        contrast: contrast,
-        frequency: frequency,
-        size_std: parseFloat($("#size-std").val()),
-        position: position,
-        trialTime: stimulusOff - stimulusOn,
-    });
+    if (responses.length > 1){
+        responses.push({
+            contrast: contrast,
+            frequency: frequency,
+            size_std: parseFloat($("#size-std").val()),
+            position: [loc[counter][0], loc[counter][1], -150],
+            trialTime: stimulusOff - stimulusOn,
+        });
+    }
 
     // NEW TRIAL INFO
     angle = angle_pos[counter];
     angle2 = angle;
+    contrast = 1;
     Imax = 132;
     Imin = 122;
 
