@@ -24,8 +24,7 @@ var doubleQuit = false;
 var backgroundColor = "#7F7F7F";
 
 var loc = [[0,0], [-1, 1], [0, 1],[1, 1], [-1, 0], [1, 0], [-1,-1], [0, -1], [1, -1]];
-
-var angle_pos = [90, -45, 45, -45, 45, 90, 0, 0, 0];
+var angle_pos = [0, -45, 90, 45, 0, 0, 45, 90, -45];
 
 var counter = 0;
 var angle2 = angle_pos[counter];
@@ -135,7 +134,6 @@ $(document).ready(function () {
         toggleFullScreen();
     });
 
-
     $("#main").append('<a-plane id="noise-vr" material="transparent:true;opacity:0" width="100" height="100" position="0 0 -150.1"></a-plane>');
 
     $("#main").append('<a-plane id="opaque-vr" material="color:' + $('#background-color').val() + '; transparent:true;opacity:1" width="200" height="200" visible="false" position="0 0 -49.1"></a-plane>');
@@ -153,7 +151,6 @@ $(document).ready(function () {
     $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width=".5" height="3" position="0 7 -150"></a-plane>');
     $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="-7 0 -150"></a-plane>');
     $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="7 0 -150"></a-plane>');
-
 
     //trials
     num_trials = Math.floor((parseFloat($("#max-frequency").val())-parseFloat($("#frequency").val()) + parseFloat($("#step-frequency").val()))/parseFloat($("#step-frequency").val())) *loc.length;
@@ -202,8 +199,7 @@ $(document).ready(function () {
         angle2 = angle;
     });
 
-    $("#distance").keyup(function () {
-
+    $("#distance").change(function () {
         distance = parseFloat($("#distance").val());
         index = 0;
         while (index < loc.length){
@@ -214,6 +210,7 @@ $(document).ready(function () {
 
             index+=1;    
      }
+    
     });
 
     $("#background-noise").change(function () {
@@ -457,20 +454,20 @@ async function newTrial(response) {
     // document.getElementById("opaque-vr").setAttribute("material", "opacity", "1");
     $("#opaque-vr").attr("visible", "true");
     document.getElementById("bottom-text").setAttribute("text", "value", "\n\n" + (responses.length + 1) + "/" + trials);
+    console.log(responses.length+1, trials);
     document.getElementById("bottom-text").setAttribute("position", "0 0 -150");
     document.getElementById("gabor-vr").setAttribute("material", "opacity", "0");
     Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "0") });
     document.getElementById("sky").setAttribute("color", "rgb(0,0,0)");
     document.getElementById("noise-vr").setAttribute("material", "opacity", "0");
-    if (responses.length > 1){
-        responses.push({
+    responses.push({
             contrast: contrast,
             frequency: frequency,
             size_std: parseFloat($("#size-std").val()),
             position: [loc[counter][0], loc[counter][1], -150],
             trialTime: stimulusOff - stimulusOn,
-        });
-    }
+    });
+
 
     // NEW TRIAL INFO
     angle = angle_pos[counter];
@@ -511,7 +508,7 @@ async function newTrial(response) {
                 document.getElementById("bottom-text").setAttribute("text", "value", "");
             }
 
-            document.getElementById("bottom-text").setAttribute("position", "0 -25 -49");
+            document.getElementById("bottom-text").setAttribute("position", "0 -25 -150");
 
             acceptingResponses = true;
             if ($("#fixed-position").prop("checked")) {
