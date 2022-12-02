@@ -147,7 +147,7 @@ $(document).ready(function () {
     $("#main").append('<a-plane id="gabor-vr" material="src:url(data:image/png;base64,' + rr + ');transparent:true;opacity:1" width="10" height="10" position="0 -10 -150"></a-plane>');
 
     // cues
-    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width=".5" height="3" position="0 -77 -150"></a-plane>');
+    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width=".5" height="3" position="0 -17 -150"></a-plane>');
     $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width=".5" height="3" position="0 -3 -150"></a-plane>');
     $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="-7 -10 -150"></a-plane>');
     $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="7 -10 -150"></a-plane>');
