@@ -32,7 +32,7 @@ var Imax = 132;
 var Imin = 122;
 var trials = 10;
 var frequency = 0;
-
+var location_adjusted = false;
 AFRAME.registerComponent('button-listener', {
     init: function () {
         var el = this.el;
@@ -151,7 +151,7 @@ $(document).ready(function () {
     $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width=".5" height="3" position="0 -3 -150"></a-plane>');
     $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="-7 -10 -150"></a-plane>');
     $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="7 -10 -150"></a-plane>');
-    
+
     //trials
     num_trials = Math.floor((parseFloat($("#max-frequency").val())-parseFloat($("#frequency").val()) + parseFloat($("#step-frequency").val()))/parseFloat($("#step-frequency").val())) *loc.length;
     trials = num_trials + 1;
@@ -206,11 +206,10 @@ $(document).ready(function () {
 
             loc[index][0] *= distance;
             loc[index][1] = loc[index][1] * distance - 10;
-            console.log(index, loc[index][0], loc[index][1], parseFloat($("#distance").val()));
-
             index+=1;    
      }
     
+     location_adjusted = true;
     });
 
     $("#background-noise").change(function () {
@@ -247,6 +246,18 @@ $(document).ready(function () {
     });
 
 });
+
+function updateLocation(){
+    distance = parseFloat($("#distance").val());
+    index = 0;
+    while (index < loc.length){
+
+        loc[index][0] *= distance;
+        loc[index][1] = loc[index][1] * distance - 10;
+        index+=1;    
+    }
+    location_adjusted = true;
+}
 
 function updateGabor(max, min){
     Imax += max;
@@ -448,43 +459,44 @@ async function newTrial(response) {
     stimulusOff = Date.now();
     acceptingResponses = false;
 
-    num_trials = Math.floor((parseFloat($("#max-frequency").val())-parseFloat($("#frequency").val()) + parseFloat($("#step-frequency").val()))/parseFloat($("#step-frequency").val())) *loc.length;
-    trials = num_trials + 1;
-      
+    max_frequency= (parseFloat($("#max-frequency").val()));
+    num_trials = Math.floor((max_frequency-parseFloat($("#frequency").val()) + parseFloat($("#step-frequency").val()))/parseFloat($("#step-frequency").val())) *loc.length;
+    trials = num_trials;
+
+    if(location_adjusted==false){
+        updateLocation();
+    }
+
     // document.getElementById("opaque-vr").setAttribute("material", "opacity", "1");
     $("#opaque-vr").attr("visible", "true");
-    document.getElementById("bottom-text").setAttribute("text", "value", "\n\n" + (responses.length + 1) + "/" + trials);
-    console.log(responses.length+1, trials);
+  
+    document.getElementById("bottom-text").setAttribute("text", "value", "\n\n" + (responses.length) + "/" + trials);
     document.getElementById("bottom-text").setAttribute("position", "0 0 -49");
     document.getElementById("gabor-vr").setAttribute("material", "opacity", "0");
     Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "0") });
     document.getElementById("sky").setAttribute("color", "rgb(0,0,0)");
     document.getElementById("noise-vr").setAttribute("material", "opacity", "0");
-    responses.push({
+
+    if (frequency <= max_frequency) {
+        responses.push({
             contrast: contrast,
             frequency: frequency,
+            max_frequency: max_frequency,
             size_std: parseFloat($("#size-std").val()),
-            position: [loc[counter][0], loc[counter][1], -150],
+            position: position,
             trialTime: stimulusOff - stimulusOn,
-    });
-
-
-    // NEW TRIAL INFO
-    angle = angle_pos[counter];
-    angle2 = angle;
-    contrast = 1;
-    Imax = 132;
-    Imin = 122;
+      });
+    }
 
     if(responses.length >= 10 && ((responses.length - 10)%9==0)){
         frequency += parseFloat($("#step-frequency").val());
     }
+    console.log(frequency);
 
-    gabor = createGabor(100, frequency, angle, parseFloat($("#size-std").val()), 0.5, contrast);
 
     await showNoise();
     setTimeout(async function () {
-        if (responses.length >= trials) {
+        if (frequency > max_frequency) {
             // END EXPERIMENT!
             document.getElementById("bottom-text").setAttribute("text", "value", "EXPERIMENT FINISHED!\n\nThanks for playing :)");
             json = {};
@@ -498,23 +510,25 @@ async function newTrial(response) {
 
             downloadObjectAsJson(json, json["participant-id"] + "-" + Date.now());
         } else {
+            // NEW TRIAL INFO
+            angle = angle_pos[counter];
+            angle2 = angle;
+            contrast = 1;
+            Imax = 132;
+            Imin = 122;
+
+            gabor = createGabor(100, frequency, angle, parseFloat($("#size-std").val()), 0.5, contrast);
+
           
             rr = gabor.toDataURL("image/png").split(';base64,')[1];
+            document.getElementById("bottom-text").setAttribute("text", "value", "Press A to increase contrast, B to decrease contrast, C to confirm");
             document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
-
-            if((responses.length - 10)%8!=0 || (responses.length - 10)%7!=0){
-                document.getElementById("bottom-text").setAttribute("text", "value", "Press A to increase contrast, B to decrease contrast, C to confirm");
-            }else{
-                document.getElementById("bottom-text").setAttribute("text", "value", "");
-            }
-
             document.getElementById("bottom-text").setAttribute("position", "0 -25 -150");
 
             acceptingResponses = true;
             if ($("#fixed-position").prop("checked")) {
-                position = [loc[counter][0], loc[counter][1] ,-150];
+                position = [loc[counter][0], loc[counter][1],-150];
                 counter +=1;
-
                 if (counter == loc.length){
                     counter = 0;
                 }
@@ -548,6 +562,7 @@ async function newTrial(response) {
             document.getElementById("sky").setAttribute("color", backgroundColor);
             stimulusOn = Date.now();
         }
+
     }, 1000);
 
 }
