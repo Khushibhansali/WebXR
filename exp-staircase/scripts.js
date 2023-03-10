@@ -278,7 +278,6 @@ function updateGabor(){
     }
 
     stairCaseContrast.push(contrast); 
-    console.log(contrast);
 
     var gabor = createGabor(100, frequency, angle, $("#size-std").val(), 0.5, contrast);
     $("#gabor").html(gabor);
@@ -505,8 +504,6 @@ async function newTrial(response) {
       });
     }
 
-    //reset contrast
-    stairCaseContrast = [1]
     if(responses.length >= 10 && ((responses.length - 10)%9==0)){
         frequency += parseFloat($("#step-frequency").val());
     }
@@ -530,6 +527,7 @@ async function newTrial(response) {
             // NEW TRIAL INFO
             angle = angle_pos[counter];
             contrast = 1;
+            stairCaseContrast = [1]
         
             gabor = createGabor(100, frequency, angle, parseFloat($("#size-std").val()), 0.5, contrast);
 
