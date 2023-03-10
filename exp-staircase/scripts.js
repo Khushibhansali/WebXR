@@ -528,10 +528,10 @@ async function newTrial(response) {
             angle = angle_pos[counter];
             contrast = 1;
             stairCaseContrast = [1]
-        
+            stairCase = false;
+            
             gabor = createGabor(100, frequency, angle, parseFloat($("#size-std").val()), 0.5, contrast);
 
-          
             rr = gabor.toDataURL("image/png").split(';base64,')[1];
             document.getElementById("bottom-text").setAttribute("text", "value", "Press A if you can see, B if you can't see, C to confirm");
             document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
