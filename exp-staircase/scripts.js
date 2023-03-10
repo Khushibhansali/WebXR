@@ -25,13 +25,12 @@ var backgroundColor = "#7F7F7F";
 
 var loc = [[0,0], [-1, 1], [0, 1],[1, 1], [-1, 0], [1, 0], [-1,-1], [0, -1], [1, -1]];
 var angle_pos = [0, -45, 90, 45, 0, 0, 45, 90, -45];
-
+var angle = 0;
+var stairCaseContrast = [1]
 var counter = 0;
-var angle2 = angle_pos[counter];
 var trials = 10;
 var frequency = 0;
 var location_adjusted = false;
-var currentContrast = 1;
 var stairCase = false;
 
 //code for Quest controller
@@ -194,7 +193,6 @@ $(document).ready(function () {
         $("#gabor").html(gabor);
         rr = gabor.toDataURL("image/png").split(';base64,')[1];
         document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
-        angle2 = angle;
     });
 
     $("#frequency").change(function () {
@@ -204,7 +202,6 @@ $(document).ready(function () {
         $("#gabor").html(gabor);
         rr = gabor.toDataURL("image/png").split(';base64,')[1];
         document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
-        angle2 = angle;
     });
 
     $("#distance").change(function () {
@@ -268,22 +265,28 @@ function updateLocation(){
 }
 
 function updateGabor(){
-    if(contrast < 0.04 ) {
-        contrast = 0.04;
+   prevElement = stairCaseContrast.length-1;
+    if(stairCase){
+        contrast = (stairCaseContrast[prevElement] + stairCaseContrast[prevElement-1])/2;
     }else{
-        if (stairCase){
-            contrast = (currentContrast + (currentContrast*2))/2;
-        }else{
-            contrast = currentContrast/2;
-        }
-        currentContrast /=2; 
+        contrast = stairCaseContrast[prevElement]/2;
     }
 
-    var gabor = createGabor(100, frequency, angle2, $("#size-std").val(), 0.5, contrast);
+    //make sure contrast doesnt go below (1/255)
+    if (contrast < 0.04){
+        contrast = 0.04;
+    }
+
+    stairCaseContrast.push(contrast); 
+    console.log(contrast);
+
+    var gabor = createGabor(100, frequency, angle, $("#size-std").val(), 0.5, contrast);
     $("#gabor").html(gabor);
     rr = gabor.toDataURL("image/png").split(';base64,')[1];
     document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
 }
+
+
 async function showNoise() {
     if ($("#background-noise").prop("checked"))
         var noise = await createNoiseField(1000, 128, parseFloat($("#noise-sigma").val()), parseFloat($("#gaussian-sigma").val()));
@@ -493,7 +496,7 @@ async function newTrial(response) {
 
     if (frequency <= max_frequency) {
         responses.push({
-            contrast: contrast,
+            contrast: stairCaseContrast[stairCaseContrast.length-1],
             frequency: frequency,
             max_frequency: max_frequency,
             size_std: parseFloat($("#size-std").val()),
@@ -502,11 +505,11 @@ async function newTrial(response) {
       });
     }
 
+    //reset contrast
+    stairCaseContrast = [1]
     if(responses.length >= 10 && ((responses.length - 10)%9==0)){
         frequency += parseFloat($("#step-frequency").val());
     }
-    console.log(frequency);
-
 
     await showNoise();
     setTimeout(async function () {
@@ -526,11 +529,8 @@ async function newTrial(response) {
         } else {
             // NEW TRIAL INFO
             angle = angle_pos[counter];
-            angle2 = angle;
             contrast = 1;
-            Imax = 132;
-            Imin = 122;
-
+        
             gabor = createGabor(100, frequency, angle, parseFloat($("#size-std").val()), 0.5, contrast);
 
           
