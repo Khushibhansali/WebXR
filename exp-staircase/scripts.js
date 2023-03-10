@@ -176,11 +176,7 @@ $(document).ready(function () {
                 stairCase = true;
                 updateGabor();
             }
-            if (keycode == "99"){
-                currentContrast = 1;
-                newTrial(true);
-            }
-        }
+         }
     });
 
     $("#myEnterVRButton").click(function () {
@@ -271,20 +267,19 @@ function updateGabor(){
     }else{
         contrast = stairCaseContrast[prevElement]/2;
     }
-
+    
     //make sure contrast doesnt go below (1/255)
-    if (contrast < 0.04){
-        contrast = 0.04;
+    if (Math.abs(contrast - stairCaseContrast[prevElement]) < 0.003){
+       newTrial(true);
     }
 
     stairCaseContrast.push(contrast); 
-
+    
     var gabor = createGabor(100, frequency, angle, $("#size-std").val(), 0.5, contrast);
     $("#gabor").html(gabor);
     rr = gabor.toDataURL("image/png").split(';base64,')[1];
     document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
 }
-
 
 async function showNoise() {
     if ($("#background-noise").prop("checked"))
@@ -533,7 +528,7 @@ async function newTrial(response) {
             gabor = createGabor(100, frequency, angle, parseFloat($("#size-std").val()), 0.5, contrast);
 
             rr = gabor.toDataURL("image/png").split(';base64,')[1];
-            document.getElementById("bottom-text").setAttribute("text", "value", "Press A if you can see, B if you can't see, C to confirm");
+            document.getElementById("bottom-text").setAttribute("text", "value", "Press A if you can see, B if you can't see");
             document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
             document.getElementById("bottom-text").setAttribute("position", "0 -25 -150");
 
