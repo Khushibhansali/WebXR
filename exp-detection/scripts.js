@@ -27,7 +27,7 @@ var loc = [[0,0], [-1, 1], [0, 1],[1, 1], [-1, 0], [1, 0], [-1,-1], [0, -1], [1,
 var angle_pos = [0, -45, 90, 45, 0, 0, 45, 90, -45];
 
 var counter = 0;
-var angle2 = angle_pos[counter];
+var angle = 0;
 var Imax = 132;
 var Imin = 122;
 var trials = 10;
@@ -186,7 +186,6 @@ $(document).ready(function () {
         $("#gabor").html(gabor);
         rr = gabor.toDataURL("image/png").split(';base64,')[1];
         document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
-        angle2 = angle;
     });
 
     $("#frequency").change(function () {
@@ -196,7 +195,6 @@ $(document).ready(function () {
         $("#gabor").html(gabor);
         rr = gabor.toDataURL("image/png").split(';base64,')[1];
         document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
-        angle2 = angle;
     });
 
     $("#distance").change(function () {
@@ -265,7 +263,7 @@ function updateGabor(max, min){
         Imin+=min;
     }
     contrast = (Imax - Imin)/ (Imax + Imin);
-    var gabor = createGabor(100, frequency, angle2, $("#size-std").val(), 0.5, contrast);
+    var gabor = createGabor(100, frequency, angle, $("#size-std").val(), 0.5, contrast);
     $("#gabor").html(gabor);
     rr = gabor.toDataURL("image/png").split(';base64,')[1];
     document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
@@ -512,7 +510,6 @@ async function newTrial(response) {
         } else {
             // NEW TRIAL INFO
             angle = angle_pos[counter];
-            angle2 = angle;
             contrast = 1;
             Imax = 132;
             Imin = 122;
