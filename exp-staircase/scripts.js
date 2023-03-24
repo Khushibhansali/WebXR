@@ -49,14 +49,8 @@ AFRAME.registerComponent('button-listener', {
 
         el.addEventListener('bbuttondown', function (evt) {
             if (acceptingResponses){
+                canSee = false;
                 updateGabor();
-            }
-        });
-
-        el.addEventListener('xbuttondown', function(evt){
-            if (acceptingResponses){
-                currentContrast = 1;
-                newTrial(true);
             }
         });
 
@@ -143,7 +137,7 @@ $(document).ready(function () {
 
     $("#main").append('<a-plane id="noise-vr" material="transparent:true;opacity:0" width="100" height="100" position="0 0 -150.1"></a-plane>');
 
-    $("#main").append('<a-plane id="opaque-vr" material="color:' + $('#background-color').val() + '; transparent:true;opacity:1" width="200" height="200" visible="false" position="0 0 -49.1"></a-plane>');
+    $("#main").append('<a-plane id="opaque-vr" material="color:' + backgroundColor + '; transparent:true;opacity:1" width="200" height="200" visible="false" position="0 0 -49.1"></a-plane>');
 
     frequency = parseFloat($("#frequency").val());
 
@@ -238,15 +232,6 @@ $(document).ready(function () {
             document.getElementById("noise-vr").setAttribute("material", "opacity", "1");
         else
             document.getElementById("noise-vr").setAttribute("material", "opacity", "0");
-    });
-
-    $('#background-color').minicolors({
-        control: 'hue',
-        change: function () {
-            backgroundColor = $('#background-color').val();
-            $("#sky").attr("color", backgroundColor);
-            $("#opaque-vr").attr("color", backgroundColor);
-        },
     });
 
 });
