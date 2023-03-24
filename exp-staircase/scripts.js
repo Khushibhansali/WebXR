@@ -26,12 +26,14 @@ var backgroundColor = "#7F7F7F";
 var loc = [[0,0], [-1, 1], [0, 1],[1, 1], [-1, 0], [1, 0], [-1,-1], [0, -1], [1, -1]];
 var angle_pos = [0, -45, 90, 45, 0, 0, 45, 90, -45];
 var angle = 0;
-var stairCaseContrast = [1]
+var contrastValues = [1]
 var counter = 0;
 var trials = 10;
 var frequency = 0;
 var location_adjusted = false;
-var stairCase = false;
+var canSee = false;
+var high = 1;
+var low = 0;
 
 //code for Quest controller
 AFRAME.registerComponent('button-listener', {
@@ -40,13 +42,13 @@ AFRAME.registerComponent('button-listener', {
 
         el.addEventListener('abuttondown', function (evt) {
             if (acceptingResponses){
+                canSee = true;
                 updateGabor();
             }
         });
 
         el.addEventListener('bbuttondown', function (evt) {
             if (acceptingResponses){
-                stairCase = true;
                 updateGabor();
             }
         });
@@ -170,10 +172,11 @@ $(document).ready(function () {
     $(document).on('keypress', function (event) {
         let keycode = (event.keyCode ? event.keyCode : event.which);
         if (acceptingResponses) {
-            if (keycode == '97') {
+           if (keycode == '97') {
+                canSee = true;
                 updateGabor();
             } if (keycode == "98") {
-                stairCase = true;
+                canSee = false;
                 updateGabor();
             }
         }
@@ -261,23 +264,21 @@ function updateLocation(){
 }
 
 function updateGabor(){
-   prevElement = stairCaseContrast.length-1;
-    if(stairCase && stairCaseContrast.length > 2){
-        contrast = (stairCaseContrast[prevElement] + stairCaseContrast[prevElement-1])/2;
+   
+    if (canSee==true){
+        high = contrast;
+        contrast = (high + low)/2;
     }else{
-        contrast = stairCaseContrast[prevElement]/2;
-    }
     
-    //make sure contrast doesnt go below (1/255)
-    if (Math.abs(contrast - stairCaseContrast[prevElement]) < 0.003 || 
-       (stairCase && stairCaseContrast.length <= 2 && contrast == stairCaseContrast[prevElement]/2)){
-        contrast = Math.max(contrast, stairCaseContrast[prevElement]);
-       newTrial(true);
+        low = contrast;
+        contrast = (high + low) /2;
     }
 
-    stairCaseContrast.push(contrast); 
-        
-    //target disappears
+    
+    if (Math.abs(high-low) < 0.003 ){
+        newTrial(true);
+    }
+  
     gabor = createGabor(100, frequency, angle, parseFloat($("#size-std").val()), 0.5, contrast);
     rr = gabor.toDataURL("image/png").split(';base64,')[1];
     document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
@@ -530,8 +531,10 @@ async function newTrial(response) {
             // NEW TRIAL INFO
             angle = angle_pos[counter];
             contrast = 1;
-            stairCaseContrast = [1]
-            stairCase = false;
+            contrastValues = [1]
+            canSee = false;
+            high = 1;
+            low = 0;
 
             //target disappears
             gabor = createGabor(100, frequency, angle, parseFloat($("#size-std").val()), 0.5, contrast);
