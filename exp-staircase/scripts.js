@@ -262,12 +262,12 @@ function updateLocation(){
 
 function updateGabor(){
    prevElement = stairCaseContrast.length-1;
-    if(stairCase){
+    if(stairCase && stairCaseContrast.length > 2){
         contrast = (stairCaseContrast[prevElement] + stairCaseContrast[prevElement-1])/2;
     }else{
         contrast = stairCaseContrast[prevElement]/2;
     }
-    
+        
     //make sure contrast doesnt go below (1/255)
     if (Math.abs(contrast - stairCaseContrast[prevElement]) < 0.003  || 
        (stairCase && stairCaseContrast.length <= 2 && contrast == stairCaseContrast[prevElement]/2)){
