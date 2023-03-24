@@ -176,7 +176,7 @@ $(document).ready(function () {
                 stairCase = true;
                 updateGabor();
             }
-         }
+        }
     });
 
     $("#myEnterVRButton").click(function () {
@@ -267,24 +267,26 @@ function updateGabor(){
     }else{
         contrast = stairCaseContrast[prevElement]/2;
     }
-        
+    
     //make sure contrast doesnt go below (1/255)
-    if (Math.abs(contrast - stairCaseContrast[prevElement]) < 0.003  || 
+    if (Math.abs(contrast - stairCaseContrast[prevElement]) < 0.003 || 
        (stairCase && stairCaseContrast.length <= 2 && contrast == stairCaseContrast[prevElement]/2)){
         contrast = Math.max(contrast, stairCaseContrast[prevElement]);
        newTrial(true);
     }
 
     stairCaseContrast.push(contrast); 
-    
-    var gabor = createGabor(100, frequency, angle, $("#size-std").val(), 0.5, contrast);
-    $("#gabor").html(gabor);
+        
+    //target disappears
+    gabor = createGabor(100, frequency, angle, parseFloat($("#size-std").val()), 0.5, contrast);
     rr = gabor.toDataURL("image/png").split(';base64,')[1];
     document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
     document.getElementById("bottom-text").setAttribute("text", "value", "Press A if you can see, B if you can't see");
     document.getElementById("bottom-text").setAttribute("position", "0 -25 -150");
 
+
 }
+
 
 async function showNoise() {
     if ($("#background-noise").prop("checked"))
@@ -495,7 +497,7 @@ async function newTrial(response) {
 
     if (frequency <= max_frequency) {
         responses.push({
-            contrast: stairCaseContrast[stairCaseContrast.length-1],
+            contrast: contrast,
             frequency: frequency,
             max_frequency: max_frequency,
             size_std: parseFloat($("#size-std").val()),
@@ -523,18 +525,19 @@ async function newTrial(response) {
             json["responses"] = responses;
 
             downloadObjectAsJson(json, json["participant-id"] + "-" + Date.now());
-        } else {
+        } 
+        else {
             // NEW TRIAL INFO
             angle = angle_pos[counter];
             contrast = 1;
             stairCaseContrast = [1]
             stairCase = false;
-            
-            gabor = createGabor(100, frequency, angle, parseFloat($("#size-std").val()), 0.5, contrast);
 
+            //target disappears
+            gabor = createGabor(100, frequency, angle, parseFloat($("#size-std").val()), 0.5, contrast);
             rr = gabor.toDataURL("image/png").split(';base64,')[1];
-            document.getElementById("bottom-text").setAttribute("text", "value", "Press A if you can see, B if you can't see");
             document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
+            document.getElementById("bottom-text").setAttribute("text", "value", "Press A if you can see, B if you can't see");
             document.getElementById("bottom-text").setAttribute("position", "0 -25 -150");
 
             acceptingResponses = true;
@@ -563,7 +566,7 @@ async function newTrial(response) {
             }
             else {
                 Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "1") });
-            }
+            
             if ($("#background-noise").prop("checked"))
                 document.getElementById("noise-vr").setAttribute("material", "opacity", "1");
             else
@@ -573,6 +576,7 @@ async function newTrial(response) {
             $("#opaque-vr").attr("visible", "false");
             document.getElementById("sky").setAttribute("color", backgroundColor);
             stimulusOn = Date.now();
+            }
         }
 
     }, 1000);
