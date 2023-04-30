@@ -110,7 +110,7 @@ $(document).ready(function () {
         toggleFullScreen();
     });
 
-    $("#main").append('<a-plane id="noise-vr" material="transparent:true;opacity:0" width="100" height="100" position="0 0 -150.1"></a-plane>');
+    $("#main").append('<a-plane id="noise-vr" material="transparent:true;opacity:0" width="500" height="500" position="0 0 -150.1"></a-plane>');
 
     $("#main").append('<a-plane id="opaque-vr" material="color:' + backgroundColor + '; transparent:true;opacity:1" width="200" height="200" visible="false" position="0 0 -49.1"></a-plane>');
 
@@ -143,10 +143,12 @@ $(document).ready(function () {
     });
     $(document).on('keydown keyup keypress', function (event) {
         let keycode = (event.keyCode ? event.keyCode : event.which);
+        console.log(keycode);
+
         if (acceptingResponses) {
-            if (keycode == '97') {
+            if (keycode == 97) {
                 newTrial(true);
-            } if (keycode == "98") {
+            } else if (keycode == 98) {
                 Imax = 132;
                 Imin = 122;
                 var gabor = createGabor(100, frequency, angle, std, 0.5, 1);
@@ -154,10 +156,10 @@ $(document).ready(function () {
                 rr = gabor.toDataURL("image/png").split(';base64,')[1];
                 document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
             }
-            if (event.type === 'keyup' || keycode==38){
+            else if (keycode==38){
                 updateGabor(1, -1);
             }
-            if (keycode === 'keydown' || keycode==40){
+            else if (keycode==40){
                 updateGabor(-1, 1);
             }
         }
@@ -475,9 +477,9 @@ async function newTrial(response) {
    
     // document.getElementById("opaque-vr").setAttribute("material", "opacity", "1");
     $("#opaque-vr").attr("visible", "true");
-    trial =  responses.length;
-    if (trial >= num_trials){
-        trial = num_trials;
+    trial =  responses.length-1;
+    if (trial < 0){
+        trial = 0;
     }
     document.getElementById("bottom-text").setAttribute("text", "value", "\n\n" + trial + "/" + num_trials);
 
@@ -530,7 +532,12 @@ async function newTrial(response) {
 
             gabor = createGabor(100, frequency, angle, std, 0.5, contrast);
             rr = gabor.toDataURL("image/png").split(';base64,')[1];
-            document.getElementById("bottom-text").setAttribute("text", "value", " Press A to confirm, Press B to reset contrast, Press up/down to adjust contrast");
+            if(responses.length==0){
+                document.getElementById("bottom-text").setAttribute("text", "value", " Trial gabor: Press A to confirm, Press B to reset contrast, Press up/down to adjust contrast");
+            }else{
+                document.getElementById("bottom-text").setAttribute("text", "value", " Press A to confirm, Press B to reset contrast, Press up/down to adjust contrast");
+            }
+            //document.getElementById("bottom-text").setAttribute("text", "value", " Press A to confirm, Press B to reset contrast, Press up/down to adjust contrast");
             document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
             document.getElementById("bottom-text").setAttribute("position", "0 -25 -150");
 
