@@ -25,7 +25,6 @@ var backgroundColor = "#7F7F7F";
 
 var loc = [[0,0], [-1, 1], [0, 1],[1, 1], [-1, 0], [1, 0], [-1,-1], [0, -1], [1, -1]];
 var angle_pos = [0, -45, 90, 45, 0, 0, 45, 90, -45];
-
 var counter = 0;
 var angle = 0;
 var Imax = 132;
@@ -48,7 +47,7 @@ AFRAME.registerComponent('button-listener', {
         });
 
         el.addEventListener('bbuttondown', function (evt) {
-            var gabor = createGabor(100, frequency, angle, std, 0.5, 1);
+            var gabor = createGabor(100, frequency, 0, std, 0.5, 1);
             $("#gabor").html(gabor);
             rr = gabor.toDataURL("image/png").split(';base64,')[1];
             document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
@@ -82,10 +81,10 @@ AFRAME.registerComponent('thumbstick-logging', {
     logThumbstick: function (evt) {
         if (acceptingResponses){
             if (evt.detail.y > 0.95 || evt.detail.x > 0.95) {
-                updateGabor(1, -1);
+                updateGabor(-1, 1);
             }
             if (evt.detail.y < -0.95 || evt.detail.x < -0.95) { 
-                updateGabor(-1, 1);
+                updateGabor(1, -1);
             } 
         }
     }
@@ -110,7 +109,7 @@ $(document).ready(function () {
         toggleFullScreen();
     });
 
-    $("#main").append('<a-plane id="noise-vr" material="transparent:true;opacity:0" width="500" height="500" position="0 0 -150.1"></a-plane>');
+    $("#main").append('<a-plane id="noise-vr" material="transparent:true;opacity:0" width="200" height="200" position="0 0 -150.1"></a-plane>');
 
     $("#main").append('<a-plane id="opaque-vr" material="color:' + backgroundColor + '; transparent:true;opacity:1" width="200" height="200" visible="false" position="0 0 -49.1"></a-plane>');
 
@@ -119,17 +118,17 @@ $(document).ready(function () {
     max_freq = parseFloat($("#max-frequency").val())/26;
     step_freq= parseFloat($("#step-frequency").val())/26;
 
-    var gabor = createGabor(100, frequency, 45, 10, 0.5, 1);
+    var gabor = createGabor(100, frequency, 0, 10, 0.5, 1);
 
     $("#gabor").append(gabor);
     rr = gabor.toDataURL("image/png").split(';base64,')[1];
-    $("#main").append('<a-plane id="gabor-vr" material="src:url(data:image/png;base64,' + rr + ');transparent:true;opacity:1" width="10" height="10" position="0 -10 -150"></a-plane>');
+    $("#main").append('<a-plane id="gabor-vr" material="src:url(data:image/png;base64,' + rr + ');transparent:true;opacity:1" width="10" height="10" position="0 0 -150"></a-plane>');
 
     // cues
-    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width=".5" height="3" position="0 -17 -150"></a-plane>');
-    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width=".5" height="3" position="0 -3 -150"></a-plane>');
-    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="-7 -10 -150"></a-plane>');
-    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="7 -10 -150"></a-plane>');
+    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width=".5" height="3" position="0 -7 -150"></a-plane>');
+    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width=".5" height="3" position="0 7 -150"></a-plane>');
+    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="7 0 -150"></a-plane>');
+    $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="-7 0 -150"></a-plane>');
 
     //trials
     num_trials = Math.floor((max_freq-frequency)/step_freq) + 1;
@@ -143,7 +142,6 @@ $(document).ready(function () {
     });
     $(document).on('keydown keyup keypress', function (event) {
         let keycode = (event.keyCode ? event.keyCode : event.which);
-        console.log(keycode);
 
         if (acceptingResponses) {
             if (keycode == 97) {
@@ -170,7 +168,9 @@ $(document).ready(function () {
     });
 
     $("#size-std").keyup(function () {
-        angle = angle_pos[counter];
+        if ($("#fixed-position").prop("checked")) {
+            angle = angle_pos[counter];
+        }
         std = parseFloat($("#size-std"))* 10;
         var gabor = createGabor(100, frequency, angle,std, 0.5, 1);
         $("#gabor").html(gabor);
@@ -179,7 +179,9 @@ $(document).ready(function () {
     });
 
     $("#frequency").change(function () {
-        angle = angle_pos[counter];
+        if ($("#fixed-position").prop("checked")) {
+            angle = angle_pos[counter];
+        }
         frequency=  parseFloat($("#frequency").val())/26;
         trial_num();
         var gabor = createGabor(100, frequency, angle, std, 0.5, 1);
@@ -202,7 +204,7 @@ $(document).ready(function () {
         while (index < loc.length){
 
             loc[index][0] *= distance;
-            loc[index][1] = loc[index][1] * distance - 10;
+            loc[index][1] = loc[index][1] * distance;
             index+=1;    
      }
      location_adjusted = true;
@@ -407,6 +409,7 @@ function trial_num(){
     }else if(!$("#fixed-position").prop("checked") && !$("#random-location").prop("checked")){
         num_trials = Math.floor((max_freq-frequency+step_freq)/step_freq);
     }
+
 }
 
 function createGabor(side, freq, orientation, stdev, phase, contrast) {
@@ -475,42 +478,35 @@ async function newTrial(response) {
         updateLocation();
     }
    
-    // document.getElementById("opaque-vr").setAttribute("material", "opacity", "1");
     $("#opaque-vr").attr("visible", "true");
-    trial =  responses.length-1;
-    if (trial < 0){
-        trial = 0;
+
+    if ($("#fixed-position").prop("checked")){
+        document.getElementById("bottom-text").setAttribute("text", "value", "\n\n" + (responses.length) + "/" + num_trials);
+    }else{
+        document.getElementById("bottom-text").setAttribute("text", "value", "\n\n" + (responses.length+1) + "/" + num_trials);
     }
-    document.getElementById("bottom-text").setAttribute("text", "value", "\n\n" + trial + "/" + num_trials);
 
     document.getElementById("bottom-text").setAttribute("position", "0 0 -49");
     document.getElementById("gabor-vr").setAttribute("material", "opacity", "0");
     Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "0") });
     document.getElementById("sky").setAttribute("color", "rgb(0,0,0)");
     document.getElementById("noise-vr").setAttribute("material", "opacity", "0");
-
+    
     if (responses.length <= num_trials) {
         responses.push({
             contrast: contrast,
-            frequency: frequency,
-            max_freq: max_freq,
-            size_std: std,
+            frequency: Math.round(frequency*26*100)/100,
+            max_freq: max_freq*26,
+            size_std: std/10,
             position: position,
             trialTime: stimulusOff - stimulusOn,
       });
     }
-
     
-    if(responses.length >= 10 && ((responses.length - 10)%9==0)){
-        frequency += step_freq;
-    }
-    if (responses.length > 1 && !$("#fixed-position").prop("checked") && !$("#random-position").prop("checked")){
-        frequency += step_freq;
-    }
-
     await showNoise();
     setTimeout(async function () {
-        if (frequency > max_freq + step_freq) {
+        if (frequency >= max_freq + step_freq) {
+            
             // END EXPERIMENT!
             document.getElementById("bottom-text").setAttribute("text", "value", "EXPERIMENT FINISHED!\n\nThanks for playing :)");
             json = {};
@@ -525,28 +521,27 @@ async function newTrial(response) {
             downloadObjectAsJson(json, json["participant-id"] + "-" + Date.now());
         } else {
             // NEW TRIAL INFO
-            angle = angle_pos[counter];
+            if ($("#fixed-position").prop("checked")){
+                angle = angle_pos[counter];
+            }
             contrast = 1;
             Imax = 132;
             Imin = 122;
 
             gabor = createGabor(100, frequency, angle, std, 0.5, contrast);
             rr = gabor.toDataURL("image/png").split(';base64,')[1];
-            if(responses.length==0){
-                document.getElementById("bottom-text").setAttribute("text", "value", " Trial gabor: Press A to confirm, Press B to reset contrast, Press up/down to adjust contrast");
-            }else{
-                document.getElementById("bottom-text").setAttribute("text", "value", " Press A to confirm, Press B to reset contrast, Press up/down to adjust contrast");
-            }
-            //document.getElementById("bottom-text").setAttribute("text", "value", " Press A to confirm, Press B to reset contrast, Press up/down to adjust contrast");
+            document.getElementById("bottom-text").setAttribute("text", "value", " Press A to confirm, Press B to reset contrast, Press up/down to adjust contrast");
             document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
-            document.getElementById("bottom-text").setAttribute("position", "0 -25 -150");
+            document.getElementById("bottom-text").setAttribute("position", "0 -50 -150");
 
             acceptingResponses = true;
             if ($("#fixed-position").prop("checked")) {
                 position = [loc[counter][0], loc[counter][1],-150];
                 counter +=1;
+
+                //if all nine locations are complete then restart it
                 if (counter == loc.length){
-                    counter = 0;
+                  counter = 0;
                 }
                 document.getElementById("gabor-vr").setAttribute("position", position.join(" "));
                 
@@ -588,13 +583,20 @@ async function newTrial(response) {
             else
                 document.getElementById("noise-vr").setAttribute("material", "opacity", "0");
             document.getElementById("gabor-vr").setAttribute("material", "opacity", "1");
-            // document.getElementById("opaque-vr").setAttribute("material", "opacity", "0");
             $("#opaque-vr").attr("visible", "false");
             document.getElementById("sky").setAttribute("color", backgroundColor);
             stimulusOn = Date.now();
         }
 
     }, 1000);
+
+    if(responses.length >= 10 && ((responses.length - 10)%9==0)){
+        frequency += step_freq;
+    }
+    if (responses.length >= 1 && !$("#fixed-position").prop("checked") && !$("#random-position").prop("checked")){
+        frequency += step_freq;
+    }
+
 }
 
 function downloadObjectAsJson(exportObj, exportName) {
