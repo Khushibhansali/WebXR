@@ -31,14 +31,15 @@
             <a-entity id="alignment" visible="false"></a-entity>
             <a-entity id="main">
                 <a-entity id="bottom-text" text="value: Press A to confirm, Press B to reset contrast,Press up/down to adjust contrast; align: center; width: 50"
-                    position="0 -25 -150"></a-entity>
+                    position="0 -50 -150"></a-entity>
             </a-entity>
         </a-entity>
         <a id="myEnterVRButton" href="#">START!</a>
     </a-scene>
     <div id="info">
-        <p>
-            Press A to confirm, Press B to reset contrast,<br/>Press up/down key or thumkstick up/down<br/> to adjust contrast</p>
+        <!-- <p>
+            Press A to confirm, Press B to reset contrast,<br/>Press up/down key or thumkstick up/down<br/> to adjust contrast
+        </p> -->
         <p>Participant ID: <input type="text" class="input" id="participant-id">
         </p>
         <p>Size (std in meters): <input type="text" class="input" id="size-std" value="1.2">
@@ -47,20 +48,16 @@
         </p>
         <p>Max Frequency (cycles per degree): <input type="text" class="input" id="max-frequency" value="5.72">
         </p>
-        <p>Try to keep max frequency below 6 to<br/> avoid WebXR software aliasing</p>
-        <p>Step Frequency (cycles per degree): <input type="text" class="input" id="step-frequency" value="1.3">
+        <p>Step Frequency (cycles per degree):  <input type="text" class="input" id="step-frequency" value="1.3">
         </p> 
-        <p>Distance (meters): <input type="text" class="input" id="distance" value = "25">
-        </p>
         <p>9 positions: <input type="checkbox" class="input" id="fixed-position">
+        </p>
+        <p>Shift (meters): <input type="text" class="input" id="distance" value = "25">
         </p>
         <p>Random location: <input type="checkbox" class="input" id="random-location">
         </p>
-        <!-- <p>Background color: <input type="text" class="input" id="background-color" value="#7F7F7F">
-        </p> -->
         <p>Background noise: <input type="checkbox" class="input" id="background-noise">
         </p>
-        <p> *Current target distance is 150 meters</p>
         <div id="noise-params">
             <p>Noise sigma: <input type="text" class="input" id="noise-sigma" value="100">
             </p>
