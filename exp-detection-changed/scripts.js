@@ -29,7 +29,6 @@ var counter = 0;
 var angle = 0;
 var Imax = 132;
 var Imin = 122;
-var frequency = 0;
 var location_adjusted = false;
 var frequency = 0.02;
 var std = 12;
