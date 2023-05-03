@@ -90,7 +90,7 @@ $(document).ready(function () {
         toggleFullScreen();
     });
 
-    $("#main").append('<a-plane id="noise-vr" material="transparent:true;opacity:0" width="100" height="100" position="0 0 -150.1"></a-plane>');
+    $("#main").append('<a-plane id="noise-vr" material="transparent:true;opacity:0" width="200" height="200" position="0 0 -150.1"></a-plane>');
     $("#main").append('<a-plane id="opaque-vr" material="color:' + backgroundColor + '; transparent:true;opacity:1" width="200" height="200" visible="false" position="0 0 -49.1"></a-plane>');
 
     var gabor = createGabor(100, frequency, 0, std, 0.5, 1);
@@ -152,11 +152,7 @@ $(document).ready(function () {
     });
 
     $("#num-trials").change(function() {
-        if ($("#fixed-position").prop("checked")) {
-            totalTrials = parseInt($("#num-trials").val()) * loc.length;
-        }else{
-            totalTrials =parseInt($("#num-trials").val());
-        }
+        setTrials();
     });
 
     $("#background-noise").change(function () {
@@ -198,7 +194,7 @@ $(document).ready(function () {
 
     
     $("#fixed-position").change(function () {
-        updateTrialNum();
+        setTrials();
      });
 });
 
@@ -212,6 +208,14 @@ function updateLocation(){
         index+=1;    
     }
     location_adjusted = true;
+}
+
+function setTrials(){
+    if ($("#fixed-position").prop("checked")) {
+        totalTrials = parseInt($("#num-trials").val()) * loc.length;
+    }else{
+        totalTrials =parseInt($("#num-trials").val());
+    }
 }
 
 async function showNoise() {
@@ -405,10 +409,12 @@ async function newTrial(response) {
         updateLocation();
     }
 
+    setTrials();
+
     str = present == response ? "Correct!" : "Incorrect!";
     // document.getElementById("opaque-vr").setAttribute("material", "opacity", "1");
     $("#opaque-vr").attr("visible", "true");
-    document.getElementById("bottom-text").setAttribute("text", "value", str + "\n\n" + (responses.length + 1) + "/" + totalTrials);
+    document.getElementById("bottom-text").setAttribute("text", "value", str + "\n\n" + (responses.length ) + "/" + totalTrials);
     document.getElementById("bottom-text").setAttribute("position", "0 0 -49");
     document.getElementById("gabor-vr").setAttribute("material", "opacity", "0");
     Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "0") });
@@ -417,8 +423,8 @@ async function newTrial(response) {
     responses.push({
         present: present,
         contrast: contrast,
-        frequency: parseFloat($("#frequency").val())*26,
-        size_std: parseFloat($("#size-std").val())/10,
+        frequency: frequency*26,
+        size_std: std/10,
         position: position,
         trialTime: stimulusOff - stimulusOn,
         response: response
@@ -444,7 +450,7 @@ async function newTrial(response) {
     gabor = createGabor(100, frequency, angle, std, 0.5, contrast);
     await showNoise();
     setTimeout(async function () {
-        if (responses.length >= totalTrials) {
+        if (responses.length > totalTrials) {
             // END EXPERIMENT!
             document.getElementById("bottom-text").setAttribute("text", "value", "EXPERIMENT FINISHED!\n\nThanks for playing :)");
             json = {};
@@ -468,8 +474,8 @@ async function newTrial(response) {
             if ($("#fixed-position").prop("checked")) {
                 
                 position = [loc[counter][0], loc[counter][1],-150];
-
-                if(totalTrials % $("#num-trials") == 0){
+                console.log(responses.length, position);
+                if(responses.length % parseInt($("#num-trials").val()) == 0){
                     counter +=1;
                 }
 
