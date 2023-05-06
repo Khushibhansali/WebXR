@@ -32,6 +32,7 @@ var frequency = 0.02;
 var std = 12;
 var totalTrials = 100;
 
+/* Handles different controller button pressed  */
 AFRAME.registerComponent('button-listener', {
     init: function () {
         var el = this.el;
@@ -111,6 +112,8 @@ $(document).ready(function () {
     $("#info").on("keypress", function (e) {
         e.stopPropagation();
     });
+
+    /* Keyboard a->97 and b-> 98 corresponding action  */
     $(document).on('keypress', function (event) {
         let keycode = (event.keyCode ? event.keyCode : event.which);
         if (acceptingResponses) {
@@ -198,7 +201,7 @@ $(document).ready(function () {
      });
 });
 
-
+/*If the shift between targets is changed then this calculates new target positions */
 function updateLocation(){
     distance = parseFloat($("#distance").val());
     index = 0;
@@ -210,6 +213,7 @@ function updateLocation(){
     location_adjusted = true;
 }
 
+/*Calculates total trials */
 function setTrials(){
     if ($("#fixed-position").prop("checked")) {
         totalTrials = parseInt($("#num-trials").val()) * loc.length;
@@ -405,6 +409,7 @@ async function newTrial(response) {
     stimulusOff = Date.now();
     acceptingResponses = false;
 
+    /* This ensures that targets will be in correct place if the shift between targets is updated */
     if(location_adjusted==false){
         updateLocation();
     }
@@ -412,7 +417,7 @@ async function newTrial(response) {
     setTrials();
 
     str = present == response ? "Correct!" : "Incorrect!";
-    // document.getElementById("opaque-vr").setAttribute("material", "opacity", "1");
+
     $("#opaque-vr").attr("visible", "true");
     document.getElementById("bottom-text").setAttribute("text", "value", str + "\n\n" + (responses.length ) + "/" + totalTrials);
     document.getElementById("bottom-text").setAttribute("position", "0 0 -49");
@@ -420,6 +425,8 @@ async function newTrial(response) {
     Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "0") });
     document.getElementById("sky").setAttribute("color", "rgb(0,0,0)");
     document.getElementById("noise-vr").setAttribute("material", "opacity", "0");
+    
+    /* Records trial information to json outfile */
     responses.push({
         present: present,
         contrast: contrast,
@@ -430,6 +437,7 @@ async function newTrial(response) {
         response: response
     });
 
+    
     // NEW TRIAL INFO
 
     present = Math.random() < 0.5;
@@ -440,7 +448,7 @@ async function newTrial(response) {
         contrast = parseInt(Math.random() * parseInt($("#steps-contrast").val()) + 1) / parseInt($("#steps-contrast").val()) * parseFloat($("#max-contrast").val()); // between 0 and 0.1
     }
 
-    // contrast = 0.2;
+ 
     if ($("#fixed-position").prop("checked")) {
         angle = angle_pos[counter];
     }else{
