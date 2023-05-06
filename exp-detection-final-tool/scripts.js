@@ -36,6 +36,7 @@ var std = 12;
 var max_freq = 0.03;
 var step_freq= 0.05;
 
+/*Registers controller button pressed */
 AFRAME.registerComponent('button-listener', {
     init: function () {
         var el = this.el;
@@ -68,6 +69,8 @@ AFRAME.registerComponent('button-listener', {
     }
 });
 
+
+/* Controller thumbstick actions */
 AFRAME.registerComponent('thumbstick-logging', {
     init: function () {
         this.el.addEventListener('thumbstickmoved', this.logThumbstick);
@@ -113,6 +116,7 @@ $(document).ready(function () {
 
     $("#main").append('<a-plane id="opaque-vr" material="color:' + backgroundColor + '; transparent:true;opacity:1" width="200" height="200" visible="false" position="0 0 -49.1"></a-plane>');
 
+    /* Adjusting the frequency, max frequency, std, and step frequency based on depth of 150m*/
     frequency = parseFloat($("#frequency").val())/26;
     std = parseFloat($("#size-std").val())*10;
     max_freq = parseFloat($("#max-frequency").val())/26;
@@ -124,7 +128,7 @@ $(document).ready(function () {
     rr = gabor.toDataURL("image/png").split(';base64,')[1];
     $("#main").append('<a-plane id="gabor-vr" material="src:url(data:image/png;base64,' + rr + ');transparent:true;opacity:1" width="10" height="10" position="0 0 -150"></a-plane>');
 
-    // cues
+    // cues around target
     $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width=".5" height="3" position="0 -7 -150"></a-plane>');
     $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width=".5" height="3" position="0 7 -150"></a-plane>');
     $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="7 0 -150"></a-plane>');
@@ -140,6 +144,8 @@ $(document).ready(function () {
     $("#info").on("keypress", function (e) {
         e.stopPropagation();
     });
+
+    /* Registers keyboard input a->97 (increase contrast) and b->98 (decrease contrast) */
     $(document).on('keydown keyup keypress', function (event) {
         let keycode = (event.keyCode ? event.keyCode : event.which);
 
@@ -167,6 +173,9 @@ $(document).ready(function () {
         stimulusOn = Date.now();
     });
 
+    /* If target st dev changed, we update the angle of the target based on current location 
+    and type of experiment (9 loc, random loc, or static loc). We also
+    convert new st dev value to units we want and redraw target gabor */
     $("#size-std").keyup(function () {
         if ($("#fixed-position").prop("checked")) {
             angle = angle_pos[counter];
@@ -178,6 +187,9 @@ $(document).ready(function () {
         document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
     });
 
+/* If frequency changed, we update the angle of the target based on current location 
+    and type of experiment (9 loc, random loc, or static loc). We also
+    convert new frequency value to units we want, recalculate total trials, and redraw target gabor */
     $("#frequency").change(function () {
         if ($("#fixed-position").prop("checked")) {
             angle = angle_pos[counter];
@@ -189,15 +201,20 @@ $(document).ready(function () {
         rr = gabor.toDataURL("image/png").split(';base64,')[1];
         document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
     });
+
+/* If max freq changed we recalculate total trials and convert new max frequency to units we want  */
     $("#max-frequency").change(function () {
         max_freq= parseFloat($("#max-frequency").val())/26;
         trial_num();
     });
+
+/* If step freq changed we recalculate total trials and convert new step frequency to units we want  */
     $("#step-frequency").change(function () {
         step_freq= parseFloat($("#step-frequency").val())/26;
         trial_num();
     });
 
+    /* If distance between targets is updated, recalculate target positions */
     $("#distance").change(function () {
         distance = parseFloat($("#distance").val());
         index = 0;
@@ -254,6 +271,7 @@ $(document).ready(function () {
 
 });
 
+/* Calculates new location based on distance */
 function updateLocation(){
     distance = parseFloat($("#distance").val());
     index = 0;
@@ -265,6 +283,7 @@ function updateLocation(){
     location_adjusted = true;
 }
 
+/* Adjusts contrast*/
 function updateGabor(max, min){
     Imax += max;
     if (Imax % 2 == 0){
@@ -276,6 +295,7 @@ function updateGabor(max, min){
     rr = gabor.toDataURL("image/png").split(';base64,')[1];
     document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
 }
+
 async function showNoise() {
     if ($("#background-noise").prop("checked"))
         var noise = await createNoiseField(1000, 128, parseFloat($("#noise-sigma").val()), parseFloat($("#gaussian-sigma").val()));
@@ -480,6 +500,7 @@ async function newTrial(response) {
    
     $("#opaque-vr").attr("visible", "true");
 
+    // prints current trial based on experiment type
     if ($("#fixed-position").prop("checked")){
         document.getElementById("bottom-text").setAttribute("text", "value", "\n\n" + (responses.length) + "/" + num_trials);
     }else{
@@ -492,6 +513,7 @@ async function newTrial(response) {
     document.getElementById("sky").setAttribute("color", "rgb(0,0,0)");
     document.getElementById("noise-vr").setAttribute("material", "opacity", "0");
     
+    //records current gabor information to the json outfile 
     if (responses.length <= num_trials) {
         responses.push({
             contrast: contrast,
@@ -539,7 +561,7 @@ async function newTrial(response) {
                 position = [loc[counter][0], loc[counter][1],-150];
                 counter +=1;
 
-                //if all nine locations are complete then restart it
+                //if all nine locations are complete then restart counter
                 if (counter == loc.length){
                   counter = 0;
                 }
@@ -562,10 +584,7 @@ async function newTrial(response) {
                     -150];
                 document.getElementById("gabor-vr").setAttribute("position", position.join(" "));
                 
-                /*if building the proportion correct study uncomment this
-                Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "0") });
-                */
-                
+                // draw cue around target
                 var index = 0;
                 cuePosition=[[position[0], position[1]-7, position[2]], [position[0], position[1]+7, position[2]], [position[0]-7, position[1], position[2]], [position[0]+7, position[1], position[2]]];
 
@@ -590,9 +609,12 @@ async function newTrial(response) {
 
     }, 1000);
 
+    //if experiment is the 9 locations and user has seen all 9 locations then we increase frequency by step 
     if(responses.length >= 10 && ((responses.length - 10)%9==0)){
         frequency += step_freq;
     }
+
+    // if experiment is random location or static location, we update frequency with every trial
     if (responses.length >= 1 && !$("#fixed-position").prop("checked") && !$("#random-position").prop("checked")){
         frequency += step_freq;
     }
