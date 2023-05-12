@@ -476,7 +476,7 @@ async function newTrial(response) {
             document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
 
             document.getElementById("bottom-text").setAttribute("text", "value", "Press A for present, B for absent");
-            document.getElementById("bottom-text").setAttribute("position", "0 -25 -49");
+            document.getElementById("bottom-text").setAttribute("position", "0 -25 -150.1");
 
             acceptingResponses = true;
             if ($("#fixed-position").prop("checked")) {
