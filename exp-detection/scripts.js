@@ -446,8 +446,8 @@ function createGabor(side, freq, orientation, stdev, phase, contrast) {
     var doubleSide = side * 2;
     // freq needs to be halved as well
     // std needs to be doubled as well
-    freq/=2;
-    stdev *= 2;
+    freq/=3.0;
+    stdev *= 3.0;
     console.log(freq, stdev)
     var gabor = document.createElement("canvas");
     gabor.setAttribute("id", "gabor");
