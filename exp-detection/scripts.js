@@ -49,7 +49,7 @@ AFRAME.registerComponent('button-listener', {
         });
 
         el.addEventListener('bbuttondown', function (evt) {
-            var gabor = createGabor(150, frequency, 0, std, 0.5, 1);
+            var gabor = createGabor(300, frequency, 0, std, 0.5, 1);
             $("#gabor").html(gabor);
             rr = gabor.toDataURL("image/png").split(';base64,')[1];
             document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
@@ -118,12 +118,12 @@ $(document).ready(function () {
     $("#main").append('<a-plane id="opaque-vr" material="color:' + backgroundColor + '; transparent:true;opacity:1" width="150" height="150" visible="false" position="0 0 -49.1"></a-plane>');
 
     /* Adjusting the frequency, max frequency, std, and step frequency based on depth of 150m*/
-    frequency = parseFloat($("#frequency").val())/26;
-    std = parseFloat($("#size-std").val())*10;
+    frequency = (parseFloat($("#frequency").val()) / 26) / 3;
+    std = parseFloat($("#size-std").val())* 10 * 3;
     max_freq = parseFloat($("#max-frequency").val())/26;
     step_freq= parseFloat($("#step-frequency").val())/26;
 
-    var gabor = createGabor(150, frequency, 0, std, 0.5, 1);
+    var gabor = createGabor(300, frequency, 0, std, 0.5, 1);
 
     $("#gabor").append(gabor);
     rr = gabor.toDataURL("image/png").split(';base64,')[1];
@@ -156,7 +156,7 @@ $(document).ready(function () {
             } else if (keycode == 98) {
                 Imax = 132;
                 Imin = 122;
-                var gabor = createGabor(150, frequency, angle, std, 0.5, 1);
+                var gabor = createGabor(300, frequency, angle, std, 0.5, 1);
                 $("#gabor").html(gabor);
                 rr = gabor.toDataURL("image/png").split(';base64,')[1];
                 document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
@@ -182,7 +182,7 @@ $(document).ready(function () {
             angle = angle_pos[counter];
         }
         std = parseFloat($("#size-std"))* 10;
-        var gabor = createGabor(150, frequency, angle,std, 0.5, 1);
+        var gabor = createGabor(300, frequency, angle,std, 0.5, 1);
         $("#gabor").html(gabor);
         rr = gabor.toDataURL("image/png").split(';base64,')[1];
         document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
@@ -197,7 +197,7 @@ $(document).ready(function () {
         }
         frequency=  parseFloat($("#frequency").val())/26;
         trial_num();
-        var gabor = createGabor(150, frequency, angle, std, 0.5, 1);
+        var gabor = createGabor(300, frequency, angle, std, 0.5, 1);
         $("#gabor").html(gabor);
         rr = gabor.toDataURL("image/png").split(';base64,')[1];
         document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
@@ -291,7 +291,7 @@ function updateGabor(max, min){
         Imin+=min;
     }
     contrast = (Imax - Imin)/ (Imax + Imin);
-    var gabor = createGabor(150, frequency, angle, std, 0.5, contrast);
+    var gabor = createGabor(300, frequency, angle, std, 0.5, contrast);
     $("#gabor").html(gabor);
     rr = gabor.toDataURL("image/png").split(';base64,')[1];
     document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
@@ -443,28 +443,22 @@ function createGabor(side, freq, orientation, stdev, phase, contrast) {
         std         --  The standard deviation of the Gaussian envelope.
         phase       --  The phase of the patch.
     */
-    var doubleSide = side * 2;
-    // freq needs to be halved as well
-    // std needs to be doubled as well
-    freq/=3.0;
-    stdev *= 3.0;
-    console.log(freq, stdev)
     var gabor = document.createElement("canvas");
     gabor.setAttribute("id", "gabor");
-    gabor.width = doubleSide;
-    gabor.height = doubleSide;
+    gabor.width = side;
+    gabor.height = side;
     orientation = orientation * (Math.PI / 180);
     var ctx = gabor.getContext("2d");
-    ctx.createImageData(doubleSide, doubleSide);
-    idata = ctx.getImageData(0, 0, doubleSide, doubleSide);
+    ctx.createImageData(side, side);
+    idata = ctx.getImageData(0, 0, side, side);
     var amp, f, dx, dy;
     var c = 0
-    for (var x = 0; x < doubleSide; x++) {
-        for (var y = 0; y < doubleSide; y++) {
+    for (var x = 0; x < side; x++) {
+        for (var y = 0; y < side; y++) {
             // The dx from the center
-            dx = x - 0.5 * doubleSide;
+            dx = x - 0.5 * side;
             // The dy from the center
-            dy = y - 0.5 * doubleSide;
+            dy = y - 0.5 * side;
             t = 0.001 + Math.atan2(dy, dx) + orientation;
             r = Math.sqrt(dx * dx + dy * dy);
             xx = (r * Math.cos(t));
@@ -474,10 +468,10 @@ function createGabor(side, freq, orientation, stdev, phase, contrast) {
             f = Math.exp(-0.5 * Math.pow((xx) /(stdev), 2) - 0.5 * Math.pow((yy) / (stdev), 2));
 
             c+=1;
-            idata.data[(y * doubleSide + x) * 4] = 255 * (amp);     // red
-            idata.data[(y * doubleSide + x) * 4 + 1] = 255 * (amp); // green
-            idata.data[(y * doubleSide + x) * 4 + 2] = 255 * (amp); // blue
-            idata.data[(y * doubleSide + x) * 4 + 3] = 255 * f * contrast;
+            idata.data[(y * side + x) * 4] = 255 * (amp);     // red
+            idata.data[(y * side + x) * 4 + 1] = 255 * (amp); // green
+            idata.data[(y * side + x) * 4 + 2] = 255 * (amp); // blue
+            idata.data[(y * side + x) * 4 + 3] = 255 * f * contrast;
         }
     }
 
@@ -494,7 +488,7 @@ function createGabor(side, freq, orientation, stdev, phase, contrast) {
     var originalCtx = originalGabor.getContext("2d");
 
     //render at double resolution then scale down
-    originalCtx.drawImage(gabor, 0, 0, doubleSide, doubleSide, 0, 0, side, side);
+    originalCtx.drawImage(gabor, 0, 0, side, side, 0, 0, side, side);
     
     return originalGabor;
 }
@@ -502,7 +496,6 @@ function createGabor(side, freq, orientation, stdev, phase, contrast) {
 async function newTrial(response) {
     stimulusOff = Date.now();
     acceptingResponses = false;
-    console.log("current freq: " + frequency + "curr resolution" + 150);
 
     if(location_adjusted==false){
         updateLocation();
