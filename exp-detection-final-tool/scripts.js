@@ -561,7 +561,7 @@ async function newTrial(response) {
             rr = gabor.toDataURL("image/png").split(';base64,')[1];
             document.getElementById("bottom-text").setAttribute("text", "value", " Press A to confirm, Press B to reset contrast, Press up/down to adjust contrast");
             document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
-            document.getElementById("bottom-text").setAttribute("position", "0 -50 -150");
+            document.getElementById("bottom-text").setAttribute("position", "0 -50 -148");
 
             acceptingResponses = true;
             if ($("#fixed-position").prop("checked")) {
