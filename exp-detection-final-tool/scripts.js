@@ -37,20 +37,18 @@ var counter = 0;
 var angle = 0;
 
 //default values for all the fields from the menu on the website 
-var frequency = 0.02;
+var frequency = 0.5;
 var std = 12;
-var maxFrequency = 0.03;
-var stepFrequency= 0.05;
+var maxFrequency = 3.0;
+var stepFrequency= 0.5;
+
+//factors that help scale and calculate trials
 var frequencyFactor = 26;
-var stdFactor = 3;
-var cyclesPerDegreeFactor = 1 /(frequencyFactor * 3);
-var stddevFactor = stdFactor * 10;
+var cyclesPerDegreeFactor = 1/78;
+var stddevFactor = 30;
 
 //The size of the target in pixels
 var targetResolution = 300;
-
-// default dimension of noise patch
-var noisePatchResolution = 150;
 
 /*Registers controller button pressed */
 AFRAME.registerComponent('button-listener', {
@@ -128,7 +126,7 @@ $(document).ready(function () {
         toggleFullScreen();
     });
 
-    $("#main").append('<a-plane id="noise-vr" material="transparent:true;opacity:0" width="' + noisePatchResolution + '"height="' + noisePatchResolution + '" position="0 0 -151"></a-plane>');
+    $("#main").append('<a-plane id="noise-vr" material="transparent:true;opacity:0" width="200" height="200" position="0 0 -155"></a-plane>');
 
     /* Adjusting the frequency, max frequency, std, and step frequency based on depth of 150m*/
     frequency = parseFloat($("#frequency").val()) * cyclesPerDegreeFactor;
@@ -148,9 +146,6 @@ $(document).ready(function () {
     $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width=".5" height="3" position="0 7 -150"></a-plane>');
     $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="7 0 -150"></a-plane>');
     $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="-7 0 -150"></a-plane>');
-
-    //draw noise if selected
-
 
     //trials
     num_trials = Math.floor((maxFrequency-frequency)/stepFrequency) + 1;
@@ -282,7 +277,6 @@ function updateLocation(){
         index+=1;    
     }
 
-    noisePatchResolution*= distance;
     locationAdjusted = true;
 }
 
@@ -302,9 +296,9 @@ function updateGabor(max, min){
 
 async function showNoise() {
 
-    if ($("#background-noise").prop("checked")){
+    if ($("#background-noise").prop("checked"))
         var noise = await createNoiseField(1000, 128, parseFloat($("#noise-sigma").val()) * stddevFactor, parseFloat($("#gaussian-sigma").val()) * stddevFactor);
-    }
+   
 
     return new Promise(resolve => {
         if ($("#background-noise").prop("checked")) {
@@ -590,10 +584,6 @@ async function newTrial(response) {
                     Math.random() * randomPositionFactor - randomPositionFactor / 2, 
                     -150];
                 document.getElementById("gabor-vr").setAttribute("position", position.join(" "));
-                
-                /*if building the proportion correct study uncomment this
-                Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "0") });
-                */
                 
                 var index = 0;
                 cuePosition=[[position[0], position[1]-7, position[2]], [position[0], position[1]+7, position[2]], [position[0]-7, position[1], position[2]], [position[0]+7, position[1], position[2]]];
