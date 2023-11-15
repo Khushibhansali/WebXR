@@ -13,6 +13,7 @@ var randomPositionFactor = 70;
 var acceptingResponses = false;
 var doubleQuit = false;
 var backgroundColor = "#7F7F7F";
+var gaussianKernel;
 
 //default starting values for contrast following the formula (Imax - Imin)/ (Imax + Imin)
 var Imax = 132;
@@ -126,14 +127,18 @@ $(document).ready(function () {
         toggleFullScreen();
     });
 
-    $("#main").append('<a-plane id="noise-vr" material="transparent:true;opacity:0" width="200" height="200" position="0 0 -155"></a-plane>');
+    $("#main").append('<a-plane id="noise-vr" material="transparent:true;opacity:0" width="200" height="200" position="0 0 -150.1"></a-plane>');
 
+    $("#main").append('<a-plane id="opaque-vr" material="color:' + backgroundColor + '; transparent:true;opacity:1" width="200" height="200" visible="false" position="0 0 -49.1"></a-plane>');
+    
     /* Adjusting the frequency, max frequency, std, and step frequency based on depth of 150m*/
     frequency = parseFloat($("#frequency").val()) * cyclesPerDegreeFactor;
     std = parseFloat($("#size-std").val()) * stddevFactor;
     maxFrequency = parseFloat($("#max-frequency").val()) * cyclesPerDegreeFactor;
     stepFrequency= parseFloat($("#step-frequency").val())* cyclesPerDegreeFactor;
-    
+
+    gaussianKernel = makeGaussKernel(parseFloat($("#gaussian-sigma").val() * stddevFactor));
+
     //this gabor changes the size of the gabor in the menu
     var gabor = createGabor(targetResolution, frequency, 0, std, 0.5, 1);
 
@@ -189,11 +194,11 @@ $(document).ready(function () {
     /* If target st dev changed, we update the angle of the target based on current location 
     and type of experiment (9 loc, random loc, or static loc). We also
     convert new st dev value to units we want and redraw target gabor */
-    $("#size-std").keyup(function () {
+    $("#size-std").change(function () {
         if ($("#fixed-position").prop("checked")) {
             angle = angleOrientation[counter];
         }
-        std = parseFloat($("#size-std"))* 10;
+        std = parseFloat($("#size-std").val())* stddevFactor;
         var gabor = createGabor(targetResolution, frequency, angle, std, 0.5, 1);
         $("#gabor").html(gabor);
         rr = gabor.toDataURL("image/png").split(';base64,')[1];
@@ -207,7 +212,7 @@ $(document).ready(function () {
         if ($("#fixed-position").prop("checked")) {
             angle = angleOrientation[counter];
         }
-        frequency=  parseFloat($("#frequency").val()) * cyclesPerDegreeFactor;
+        frequency = parseFloat($("#frequency").val()) * cyclesPerDegreeFactor;
         trial_num();
         var gabor = createGabor(targetResolution, frequency, angle, std, 0.5, 1);
         $("#gabor").html(gabor);
@@ -242,26 +247,30 @@ $(document).ready(function () {
 
     $("#background-noise").change(function () {
         showNoise();
-        if ($("#background-noise").prop("checked"))
+        if ($("#background-noise").prop("checked")){
             document.getElementById("noise-vr").setAttribute("material", "opacity", "1");
+        }
         else
             document.getElementById("noise-vr").setAttribute("material", "opacity", "0");
     });
 
     $("#gaussian-sigma").keyup(function () {
         showNoise();
-        if ($("#background-noise").prop("checked"))
+        if ($("#background-noise").prop("checked")){
             document.getElementById("noise-vr").setAttribute("material", "opacity", "1");
-        else
+        }else{
             document.getElementById("noise-vr").setAttribute("material", "opacity", "0");
+        }
     });
 
     $("#noise-params").keyup(function () {
         showNoise();
-        if ($("#background-noise").prop("checked"))
+        if ($("#background-noise").prop("checked")){
             document.getElementById("noise-vr").setAttribute("material", "opacity", "1");
-        else
+        }
+        else{
             document.getElementById("noise-vr").setAttribute("material", "opacity", "0");
+        }
     });
 
 });
@@ -297,9 +306,8 @@ function updateGabor(max, min){
 async function showNoise() {
 
     if ($("#background-noise").prop("checked"))
-        var noise = await createNoiseField(1000, 128, parseFloat($("#noise-sigma").val()) * stddevFactor, parseFloat($("#gaussian-sigma").val()) * stddevFactor);
+        var noise = await createNoiseField(1000, 128, parseFloat($("#noise-sigma").val()), gaussianKernel);
    
-
     return new Promise(resolve => {
         if ($("#background-noise").prop("checked")) {
             $("#noise-params").show();
@@ -335,18 +343,23 @@ function createNoiseField(side, mean, stdev, gaussian) {
         noise.setAttribute("id", "noise");
         noise.width = side;
         noise.height = side;
+        var buff = new Uint8Array(noise.width * noise.height * 4);
         var ctx = noise.getContext("2d");
         ctx.createImageData(side, side);
         idata = ctx.getImageData(0, 0, side, side);
+
         for (var x = 0; x < side; x++) {
             for (var y = 0; y < side; y++) {
                 amp = (Math.random() - 0.5) * stdev;
-                idata.data[(y * side + x) * 4] = mean + amp;     // red
-                idata.data[(y * side + x) * 4 + 1] = mean + amp; // green
-                idata.data[(y * side + x) * 4 + 2] = mean + amp; // blue
-                idata.data[(y * side + x) * 4 + 3] = 255;
+                buff[(y * side + x) * 4] = mean + amp;     // red
+                buff[(y * side + x) * 4 + 1] = mean + amp; // green
+                buff[(y * side + x) * 4 + 2] = mean + amp; // blue
+                buff[(y * side + x) * 4 + 3] = 255;
             }
         }
+
+        // Set pixel data using the TypedArray
+        idata.data.set(buff);
 
         if (gaussian > 0) {
             kernel = makeGaussKernel(gaussian);
@@ -394,12 +407,18 @@ function gauss_internal(pixels, kernel, ch, gray) {
     var mk = Math.floor(kernel.length / 2);
     var kl = kernel.length;
 
+    // Precalculate offsets and indices
+    var offset, off, rowOffset, colOffset, row, col;
+    var hw, row, sum;
+
     // First step process columns
-    for (var j = 0, hw = 0; j < h; j++, hw += w) {
+    for (var j = 0; j < h; j++) {
+        hw = j * w;
+        rowOffset = hw * 4;
         for (var i = 0; i < w; i++) {
-            var sum = 0;
+            sum = 0;
             for (var k = 0; k < kl; k++) {
-                var col = i + (k - mk);
+                col = i + (k - mk);
                 col = (col < 0) ? 0 : ((col >= w) ? w - 1 : col);
                 sum += data[(hw + col) * 4 + ch] * kernel[k];
             }
@@ -408,20 +427,32 @@ function gauss_internal(pixels, kernel, ch, gray) {
     }
 
     // Second step process rows
-    for (var j = 0, offset = 0; j < h; j++, offset += w) {
+    for (var j = 0; j < h; j++) {
+        offset = j * w;
         for (var i = 0; i < w; i++) {
-            var sum = 0;
+            sum = 0;
             for (k = 0; k < kl; k++) {
-                var row = j + (k - mk);
+                row = j + (k - mk);
                 row = (row < 0) ? 0 : ((row >= h) ? h - 1 : row);
                 sum += buff[(row * w + i)] * kernel[k];
             }
-            var off = (j * w + i) * 4;
+            off = (offset + i) * 4;
             (!gray) ? data[off + ch] = sum :
                 data[off] = data[off + 1] = data[off + 2] = sum;
         }
     }
 }
+
+
+function trial_num(){
+    if ($("#fixed-position").prop("checked")) {
+        num_trials = Math.floor((maxFrequency-frequency+stepFrequency)/stepFrequency) * loc.length;
+    }else if(!$("#fixed-position").prop("checked") && !$("#random-location").prop("checked")){
+        num_trials = Math.floor((maxFrequency-frequency+stepFrequency)/stepFrequency);
+    }
+
+}
+
 
 function trial_num(){
     if ($("#fixed-position").prop("checked")) {
@@ -602,6 +633,7 @@ async function newTrial(response) {
             else
                 document.getElementById("noise-vr").setAttribute("material", "opacity", "0");
             document.getElementById("gabor-vr").setAttribute("material", "opacity", "1");
+            $("#opaque-vr").attr("visible", "false");
             document.getElementById("sky").setAttribute("color", backgroundColor);
             stimulusOn = Date.now();
         }
