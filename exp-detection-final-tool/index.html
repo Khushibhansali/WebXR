@@ -101,16 +101,10 @@
       // Function to validate input
       function validateInput(inputElement) {
         var inputValue = parseFloat(inputElement.value);
-  
-        // Check if the input is less than 0
-        if (inputValue < 0) {
-          inputElement.value = 0;
-        }
-  
-        // Check if the input is greater than 6
-        if (inputValue > 6) {
-          inputElement.value = 6;
-        }
+          
+        // WEBXR employs antialiasing after this number so it is the max freq visible
+        inputElement.value = inputValue < 0 ? 0 : (inputValue > 6 ? 6 : inputValue);
+
       }
 
     function validateCheckbox(checkbox, otherCheckbox) {
