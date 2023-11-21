@@ -13,7 +13,6 @@ var randomPositionFactor = 70;
 var acceptingResponses = false;
 var doubleQuit = false;
 var backgroundColor = "#7F7F7F";
-var gaussianKernel;
 
 //default starting values for contrast following the formula (Imax - Imin)/ (Imax + Imin)
 var Imax = 132;
@@ -136,8 +135,6 @@ $(document).ready(function () {
     std = parseFloat($("#size-std").val()) * stddevFactor;
     maxFrequency = parseFloat($("#max-frequency").val()) * cyclesPerDegreeFactor;
     stepFrequency= parseFloat($("#step-frequency").val())* cyclesPerDegreeFactor;
-
-    gaussianKernel = makeGaussKernel(parseFloat($("#gaussian-sigma").val() * stddevFactor));
 
     //this gabor changes the size of the gabor in the menu
     var gabor = createGabor(targetResolution, frequency, 0, std, 0.5, 1);
@@ -306,7 +303,7 @@ function updateGabor(max, min){
 async function showNoise() {
 
     if ($("#background-noise").prop("checked"))
-        var noise = await createNoiseField(1000, 128, parseFloat($("#noise-sigma").val()), gaussianKernel);
+        var noise = await createNoiseField(1000, 128, parseFloat($("#noise-sigma").val()), parseFloat($("#gaussian-sigma").val()));
    
     return new Promise(resolve => {
         if ($("#background-noise").prop("checked")) {
