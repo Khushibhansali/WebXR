@@ -48,11 +48,11 @@
         </p>
         <p>Step Frequency (cycles per degree):  <input type="text" class="input" id="step-frequency" value="0.5">
         </p> 
-        <p>9 positions: <input type="checkbox" class="input" id="fixed-position">
-        </p>
         <p>Shift (meters): <input type="text" class="input" id="distance" value = "25">
         </p>
-        <p>Random location: <input type="checkbox" class="input" id="random-location">
+        <p>Fixed locations: <input type="checkbox" class="input" id="fixed-position">
+        </p>
+        <p>Random locations: <input type="checkbox" class="input" id="random-location">
         </p>
         <p>Background noise: <input type="checkbox" class="input" id="background-noise">
         </p>
@@ -62,9 +62,64 @@
             <p>Gaussian sigma (meters): <input type="text" class="input" id="gaussian-sigma" value="0">
             </p>
         </div>
-        
         <div id="gabor" style="background:rgb(128,128,128);text-align: center;width: fit-content; margin: auto;"></div>
     </div>
 </body>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+    // Get the input elements
+    var frequencyInput = document.getElementById("frequency");
+    var maxFrequencyInput = document.getElementById("max-frequency");
+    var stepFrequencyInput = document.getElementById("step-frequency");
+    var randomLocationCheckbox = document.getElementById("random-location");
+    var positionsCheckbox = document.getElementById('fixed-position');
+
+    // Add event listeners for input validation
+    frequencyInput.addEventListener("input", function() {
+        validateInput(frequencyInput);
+    });
+
+    maxFrequencyInput.addEventListener("input", function() {
+        validateInput(maxFrequencyInput);
+    });
+
+    stepFrequencyInput.addEventListener("input", function() {
+        validateInput(stepFrequencyInput);
+    });
+
+    randomLocationCheckbox.addEventListener("change", function() {
+        validateCheckbox(randomLocationCheckbox, positionsCheckbox);
+    });
+
+    // Add event listeners for position checkboxes
+    positionsCheckbox.addEventListener("change", function() {
+        validateCheckbox(positionsCheckbox, randomLocationCheckbox);
+    });
+
+  
+      // Function to validate input
+      function validateInput(inputElement) {
+        var inputValue = parseFloat(inputElement.value);
+  
+        // Check if the input is less than 0
+        if (inputValue < 0) {
+          inputElement.value = 0;
+        }
+  
+        // Check if the input is greater than 6
+        if (inputValue > 6) {
+          inputElement.value = 6;
+        }
+      }
+
+    function validateCheckbox(checkbox, otherCheckbox) {
+      if (checkbox.checked) {
+        otherCheckbox.checked = false;
+      }
+    }
+    });
+  </script>
+  
 
 </html>
