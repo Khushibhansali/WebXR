@@ -48,18 +48,16 @@
         </p>
         <p>Step Frequency (cycles per degree):  <input type="text" class="input" id="step-frequency" value="0.5">
         </p> 
-        <p>Shift (meters): <input type="text" class="input" id="distance" value = "25">
+        <p>Translation (meters): <input type="text" class="input" id="distance" value = "25">
         </p>
-        <p>Fixed locations: <input type="checkbox" class="input" id="fixed-position">
-        </p>
-        <p>Random locations: <input type="checkbox" class="input" id="random-location">
+        <p>9 locations: <input type="checkbox" class="input" id="9-position" checked>
         </p>
         <p>Background noise: <input type="checkbox" class="input" id="background-noise">
         </p>
         <div id="noise-params">
-            <p>Noise sigma (std in gray level (0-255)): <input type="text" class="input" id="noise-sigma" value="10">
+            <p>Noise sigma (std in gray levels (0-255)): <input type="text" class="input" id="noise-sigma" value="100">
             </p>
-            <p>Gaussian sigma (meters): <input type="text" class="input" id="gaussian-sigma" value="0">
+            <p>Gaussian sigma (scale (0-9)): <input type="text" class="input" id="gaussian-sigma" value="0">
             </p>
         </div>
         <div id="gabor" style="background:rgb(128,128,128);text-align: center;width: fit-content; margin: auto;"></div>
@@ -72,8 +70,8 @@
     var frequencyInput = document.getElementById("frequency");
     var maxFrequencyInput = document.getElementById("max-frequency");
     var stepFrequencyInput = document.getElementById("step-frequency");
-    var randomLocationCheckbox = document.getElementById("random-location");
-    var positionsCheckbox = document.getElementById('fixed-position');
+    var positionsCheckbox = document.getElementById('9-position');
+    var gaussianSigma = document.getElementById('gaussian-sigma');
 
     // Add event listeners for input validation
     frequencyInput.addEventListener("input", function() {
@@ -88,28 +86,36 @@
         validateInput(stepFrequencyInput);
     });
 
-    randomLocationCheckbox.addEventListener("change", function() {
-        validateCheckbox(randomLocationCheckbox, positionsCheckbox);
+    gaussianSigma.addEventListener("input", function() {
+        validateSigma(gaussianSigma);
     });
-
-    // Add event listeners for position checkboxes
-    positionsCheckbox.addEventListener("change", function() {
-        validateCheckbox(positionsCheckbox, randomLocationCheckbox);
-    });
-
   
-      // Function to validate input
-      function validateInput(inputElement) {
-        var inputValue = parseFloat(inputElement.value);
-          
-        // WEBXR employs antialiasing after this number so it is the max freq visible
-        inputElement.value = inputValue < 0 ? 0 : (inputValue > 6 ? 6 : inputValue);
-
+  
+    // Function to validate input
+    function validateInput(inputElement) {
+      var inputValue = parseFloat(inputElement.value);
+  
+      // Check if the input is less than 0
+      if (inputValue < 0) {
+        inputElement.value = 0;
       }
+  
+      // Check if the input is greater than 6
+      if (inputValue > 6) {
+        inputElement.value = 6;
+      }
+    }
 
-    function validateCheckbox(checkbox, otherCheckbox) {
-      if (checkbox.checked) {
-        otherCheckbox.checked = false;
+    function validateSigma(sigma) {
+      var inputValue = parseFloat(sigma.value);
+
+      if (inputValue < 0) {
+        sigma.value = 0;
+      }
+  
+      // Check if the input is greater than 9
+      if (inputValue > 9) {
+        sigma.value = 9;
       }
     }
     });
