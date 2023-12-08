@@ -192,7 +192,7 @@ $(document).ready(function () {
     and type of experiment (9 loc, random loc, or static loc). We also
     convert new st dev value to units we want and redraw target gabor */
     $("#size-std").change(function () {
-        if ($("#fixed-position").prop("checked")) {
+        if ($("#9-position").prop("checked")) {
             angle = angleOrientation[counter];
         }
         std = parseFloat($("#size-std").val())* stddevFactor;
@@ -206,7 +206,7 @@ $(document).ready(function () {
     and type of experiment (9 loc, random loc, or static loc). We also
     convert new frequency value to units we want, recalculate total trials, and redraw target gabor */
     $("#frequency").change(function () {
-        if ($("#fixed-position").prop("checked")) {
+        if ($("#9-position").prop("checked")) {
             angle = angleOrientation[counter];
         }
         frequency = parseFloat($("#frequency").val()) * cyclesPerDegreeFactor;
@@ -234,13 +234,10 @@ $(document).ready(function () {
         updateLocation();
     });
 
-     $("#fixed-position").change(function () {
+     $("#9-position").change(function () {
         trial_num();
      });
-    
-     $("#random-location").change(function () {
-        trial_num();
-     });   
+       
 
     $("#background-noise").change(function () {
         showNoise();
@@ -442,23 +439,13 @@ function gauss_internal(pixels, kernel, ch, gray) {
 
 
 function trial_num(){
-    if ($("#fixed-position").prop("checked")) {
+    if ($("#9-position").prop("checked")) {
         num_trials = Math.floor((maxFrequency-frequency+stepFrequency)/stepFrequency) * loc.length;
-    }else if(!$("#fixed-position").prop("checked") && !$("#random-location").prop("checked")){
+    }else{
         num_trials = Math.floor((maxFrequency-frequency+stepFrequency)/stepFrequency);
     }
+}   
 
-}
-
-
-function trial_num(){
-    if ($("#fixed-position").prop("checked")) {
-        num_trials = Math.floor((maxFrequency-frequency+stepFrequency)/stepFrequency) * loc.length;
-    }else if(!$("#fixed-position").prop("checked") && !$("#random-location").prop("checked")){
-        num_trials = Math.floor((maxFrequency-frequency+stepFrequency)/stepFrequency);
-    }
-
-}
 
 function createGabor(side, freq, orientation, stdev, phase, contrast) {
     /*
@@ -525,9 +512,11 @@ async function newTrial(response) {
       
    
     // prints current trial based on experiment type
-    if ($("#fixed-position").prop("checked")){
+    if ($("#9-position").prop("checked")){
+       
         document.getElementById("bottom-text").setAttribute("text", "value", "\n\n" + (responses.length) + "/" + num_trials);
     }else{
+     
         document.getElementById("bottom-text").setAttribute("text", "value", "\n\n" + (responses.length+1) + "/" + num_trials);
     }
 
@@ -551,7 +540,7 @@ async function newTrial(response) {
     
     await showNoise();
     setTimeout(async function () {
-        if (frequency >= maxFrequency + stepFrequency) {
+        if ((responses.length - 1) >= num_trials) {
             
             // END EXPERIMENT!
             document.getElementById("bottom-text").setAttribute("text", "value", "EXPERIMENT FINISHED!\n\nThanks for playing :)");
@@ -567,7 +556,7 @@ async function newTrial(response) {
             downloadObjectAsJson(json, json["participant-id"] + "-" + Date.now());
         } else {
             // NEW TRIAL INFO
-            if ($("#fixed-position").prop("checked")){
+            if ($("#9-position").prop("checked")){
                 angle = angleOrientation[counter];
             }
             contrast = 1;
@@ -586,7 +575,7 @@ async function newTrial(response) {
             document.getElementById("bottom-text").setAttribute("position", "0 -50 -148");
 
             acceptingResponses = true;
-            if ($("#fixed-position").prop("checked")) {
+            if ($("#9-position").prop("checked")) {
                 position = [loc[counter][0], loc[counter][1],-150];
                 counter +=1;
 
@@ -606,25 +595,9 @@ async function newTrial(response) {
                                         });
 
             }   
-            if ($("#random-location").prop("checked")) {
-                position = [
-                    Math.random() * randomPositionFactor - randomPositionFactor / 2, 
-                    Math.random() * randomPositionFactor - randomPositionFactor / 2, 
-                    -150];
-                document.getElementById("gabor-vr").setAttribute("position", position.join(" "));
-                
-                var index = 0;
-                cuePosition=[[position[0], position[1]-7, position[2]], [position[0], position[1]+7, position[2]], [position[0]-7, position[1], position[2]], [position[0]+7, position[1], position[2]]];
-
-                Array.from(document.getElementsByClassName("cue")).forEach(function (e) { 
-                    e.setAttribute("material", "opacity", "1");
-                    e.setAttribute("position", cuePosition[index].join(" "));
-                    index+=1;
-                });
-            }
-            else {
-                Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "1") });
-            }
+            
+            Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "1") });
+            
             if ($("#background-noise").prop("checked"))
                 document.getElementById("noise-vr").setAttribute("material", "opacity", "1");
             else
@@ -643,7 +616,7 @@ async function newTrial(response) {
     }
 
     // if experiment is random location or static location, we update frequency with every trial
-    if (responses.length >= 1 && !$("#fixed-position").prop("checked") && !$("#random-position").prop("checked")){
+    if (responses.length >= 1 && !$("#9-position").prop("checked")){
         frequency += stepFrequency;
     } 
 }
