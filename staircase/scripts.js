@@ -19,27 +19,15 @@ var doubleQuit = false;
 
 var backgroundColor = "#7F7F7F";
 
-var defaultLoc = [[0,0], [0,0],
-                    [-1, 1], [-1, 1], 
-                    [0, 1],[0, 1], 
-                    [1, 1], [1, 1], 
-                    [-1, 0], [-1, 0], 
-                    [1, 0], [1, 0],
-                    [-1,-1], [-1,-1], 
-                    [0, -1], [0, -1],
-                    [1, -1], [1, -1]];
-var loc = [[0,0], [0,0],
-           [-1, 1], [-1, 1], 
-           [0, 1],[0, 1], 
-           [1, 1], [1, 1], 
-           [-1, 0], [-1, 0], 
-           [1, 0], [1, 0],
-           [-1,-1], [-1,-1], 
-           [0, -1], [0, -1],
-           [1, -1], [1, -1]];
+//the default locations we want the target to go
+var defaultLoc = [[0,0], [-1, 1], [0, 1],[1, 1], [-1, 0], [1, 0], [-1,-1], [0, -1], [1, -1]];
+
+// a variable to store new locations in case the shift or distance between targets is changed
+var loc = [[0,0], [-1, 1], [0, 1],[1, 1], [-1, 0], [1, 0], [-1,-1], [0, -1], [1, -1]];
 
 //the default orientations we want the target to rotate to
-var angleOrientation = [0, 0, -45, -45, 90, 90, 45, 45, 0, 0, 0, 0, 45, 45, 90, 90, -45, -45];
+var angleOrientation = [0, -45, 90, 45, 0, 0, 45, 90, -45];
+
 var angle = 0;
 
 var contrastValues = [1]
@@ -49,6 +37,7 @@ var location_adjusted = false;
 var canSee = false;
 var high = 1;
 var low = 0;
+var prevKey = "0";
 
 //default values for all the fields from the menu on the website 
 var frequency = 0.5;
@@ -165,16 +154,22 @@ $(document).ready(function () {
     $("#info").on("keypress", function (e) {
         e.stopPropagation();
     });
+
     $(document).on('keypress', function (event) {
         let keycode = (event.keyCode ? event.keyCode : event.which);
         if (acceptingResponses) {
-           if (keycode == '97') {
-                canSee = true;
-                updateGabor();
+           if (keycode == "97") {
+                if (keycode == prevKey){
+                    canSee = true;
+                    updateGabor();
+                }
             } if (keycode == "98") {
-                canSee = false;
-                updateGabor();
+                if (keycode == prevKey){
+                    canSee = false;
+                    updateGabor();
+                }
             }
+            prevKey = keycode;
         }
     });
 
@@ -492,29 +487,24 @@ async function newTrial(response) {
         updateLocation();
     }
 
-    // prints current trial based on experiment type
-    if ($("#9-position").prop("checked")){
-        document.getElementById("bottom-text").setAttribute("text", "value", "\n\n" + (responses.length) + "/" + num_trials);
-    }else{
-        document.getElementById("bottom-text").setAttribute("text", "value", "\n\n" + (responses.length+1) + "/" + num_trials);
-    }
-
-    // document.getElementById("opaque-vr").setAttribute("material", "opacity", "1");
-    $("#opaque-vr").attr("visible", "true");
-  
-   // document.getElementById("bottom-text").setAttribute("text", "value", "\n\n" + (responses.length) + "/" + trials);
-    document.getElementById("bottom-text").setAttribute("position", "0 0 -49");
     document.getElementById("gabor-vr").setAttribute("material", "opacity", "0");
     Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "0") });
     document.getElementById("sky").setAttribute("color", "rgb(0,0,0)");
-    document.getElementById("noise-vr").setAttribute("material", "opacity", "0");
+    document.getElementById("noise-vr").setAttribute("material", "opacity", "0")
 
+    let trial = ($("#9-position").prop("checked")) ? responses.length: responses.length + 1;
+    document.getElementById("bottom-text").setAttribute("text", "value", trial + "/ " + num_trials);
+    document.getElementById("bottom-text").setAttribute("position", "0 -50 -140");
+
+    // document.getElementById("opaque-vr").setAttribute("material", "opacity", "1");
+    // $("#opaque-vr").attr("visible", "true");
+   
     if (responses.length <= num_trials) {
         responses.push({
             contrast: contrast,
-            frequency: Math.round(frequency*frequencyFactor*100)/100,
-            maxFrequency: maxFrequency*frequencyFactor, 
-            size_std: std/10,
+            frequency: Math.round(frequency * frequencyFactor * 100) / 100,
+            maxFrequency: maxFrequency * frequencyFactor, 
+            size_std: std/stddevFactor,
             position: position,
             trialTime: stimulusOff - stimulusOn,
       });
@@ -547,13 +537,15 @@ async function newTrial(response) {
             canSee = false;
             high = 1;
             low = 0;
+            prevKey = "0";
 
             //target disappears
+            let trial = ($("#9-position").prop("checked")) ? responses.length: responses.length + 1;
             gabor = createGabor(targetResolution, frequency, angle, std, 0.5, contrast);
             rr = gabor.toDataURL("image/png").split(';base64,')[1];
             document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
-            document.getElementById("bottom-text").setAttribute("text", "value", "Press A if you can see, B if you can't see");
-            document.getElementById("bottom-text").setAttribute("position", "0 -25 -150");
+            document.getElementById("bottom-text").setAttribute("text", "value", "Press A if you can see, B if you can't see \n\n" + trial + "/ " + num_trials);
+            document.getElementById("bottom-text").setAttribute("position", "0 -50 -148");
 
             acceptingResponses = true;
             if ($("#9-position").prop("checked")) {
@@ -574,13 +566,8 @@ async function newTrial(response) {
                                         });
 
             }   
-            if ($("#random-location").prop("checked")) {
-                position = [Math.random() * positionVariation - positionVariation / 2, Math.random() * positionVariation - positionVariation / 2, -150];
-                document.getElementById("gabor-vr").setAttribute("position", position.join(" "));
-                Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "0") });
-            }
-            else {
-                Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "1") });
+           
+            Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "1") });
             
             if ($("#background-noise").prop("checked"))
                 document.getElementById("noise-vr").setAttribute("material", "opacity", "1");
@@ -591,18 +578,16 @@ async function newTrial(response) {
             $("#opaque-vr").attr("visible", "false");
             document.getElementById("sky").setAttribute("color", backgroundColor);
             stimulusOn = Date.now();
-            }
         }
 
     }, 1000);
 
     //if user has seen all 9 trials then we increase frequency by step
-    console.log(responses.length) 
-    if(responses.length >= 18 && ((responses.length - 19)%9==0)){
+    if(responses.length >= 10 && ((responses.length - 10)%9==0)){
         frequency += stepFrequency;
     }
 
-    // if experiment is random location or static location, we update frequency with every trial
+    // if experiment has static location, we update frequency with every trial
     if (responses.length >= 1 && !$("#9-position").prop("checked")){
         frequency += stepFrequency;
     } 
