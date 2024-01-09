@@ -28,16 +28,28 @@ var loc = [[0,0], [-1, 1], [0, 1],[1, 1], [-1, 0], [1, 0], [-1,-1], [0, -1], [1,
 //the default orientations we want the target to rotate to
 var angleOrientation = [0, -45, 90, 45, 0, 0, 45, 90, -45];
 
+//current angle from angleOrientation
 var angle = 0;
 
-var contrastValues = [1]
+var targetPositionCounter = {
+    "A": [0, 1, 2, 3, 4, 5, 6, 7, 8],
+    "B": [0, 1, 2, 3, 4, 5, 6, 7, 8]
+};
+
+var contrastValues = {
+    "A": [1],
+    "B": [1]
+};
+
 var counter = 0;
+
+var switchBetweenCounters = 0;
 var trials = 10;
 var location_adjusted = false;
 var canSee = false;
 var high = 1;
 var low = 0;
-var prevKey = "0";
+
 
 //default values for all the fields from the menu on the website 
 var frequency = 0.5;
@@ -145,7 +157,7 @@ $(document).ready(function () {
     $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="7 -10 -150"></a-plane>');
 
     //trials - TODO
-    num_trials = Math.floor((maxFrequency - frequency) / stepFrequency) *loc.length;
+    num_trials = Math.floor((maxFrequency - frequency) / stepFrequency) * loc.length * 2;
     trial_num();
 
     stimulusOn = Date.now();
@@ -154,22 +166,16 @@ $(document).ready(function () {
     $("#info").on("keypress", function (e) {
         e.stopPropagation();
     });
-
     $(document).on('keypress', function (event) {
         let keycode = (event.keyCode ? event.keyCode : event.which);
         if (acceptingResponses) {
-           if (keycode == "97") {
-                if (keycode == prevKey){
-                    canSee = true;
-                    updateGabor();
-                }
+           if (keycode == '97') {
+                canSee = true;
+                updateGabor();
             } if (keycode == "98") {
-                if (keycode == prevKey){
-                    canSee = false;
-                    updateGabor();
-                }
+                canSee = false;
+                updateGabor();
             }
-            prevKey = keycode;
         }
     });
 
@@ -288,10 +294,11 @@ function updateGabor(){
 
 function trial_num(){
     if ($("#9-position").prop("checked")) {
-        num_trials = Math.floor((maxFrequency-frequency+stepFrequency)/stepFrequency) * loc.length;
+        num_trials = Math.floor((maxFrequency-frequency+stepFrequency)/stepFrequency) * loc.length * 2;
     }else{
-        num_trials = Math.floor((maxFrequency-frequency+stepFrequency)/stepFrequency);
+        num_trials = Math.floor((maxFrequency-frequency+stepFrequency)/stepFrequency) * 2;
     }
+    console.log(num_trials)
 } 
 
 async function showNoise() {
@@ -466,6 +473,16 @@ function createGabor(side, frequency, orientation, std, phase, contrast) {
     return gabor;
 }
 
+function pop(arr, index) {
+    let temp = arr[index];
+    arr.splice(index, 1);
+    return temp;
+}
+
+function push(obj, arrayKey, value) {
+    obj[arrayKey].push(value);
+}
+
 function contrastImage(imageData, contrast) {
 
     var data = imageData.data;
@@ -487,24 +504,30 @@ async function newTrial(response) {
         updateLocation();
     }
 
+    // prints current trial based on experiment type
+    if ($("#9-position").prop("checked")){
+        document.getElementById("bottom-text").setAttribute("text", "value", "\n\n" + (responses.length) + "/" + num_trials);
+    }else{
+        document.getElementById("bottom-text").setAttribute("text", "value", "\n\n" + (responses.length+1) + "/" + num_trials);
+    }
+
+    // document.getElementById("opaque-vr").setAttribute("material", "opacity", "1");
+    $("#opaque-vr").attr("visible", "true");
+  
+   // document.getElementById("bottom-text").setAttribute("text", "value", "\n\n" + (responses.length) + "/" + trials);
+    document.getElementById("bottom-text").setAttribute("position", "0 0 -49");
     document.getElementById("gabor-vr").setAttribute("material", "opacity", "0");
     Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "0") });
     document.getElementById("sky").setAttribute("color", "rgb(0,0,0)");
-    document.getElementById("noise-vr").setAttribute("material", "opacity", "0")
+    document.getElementById("noise-vr").setAttribute("material", "opacity", "0");
 
-    let trial = ($("#9-position").prop("checked")) ? responses.length: responses.length + 1;
-    document.getElementById("bottom-text").setAttribute("text", "value", trial + "/ " + num_trials);
-    document.getElementById("bottom-text").setAttribute("position", "0 -50 -140");
-
-    // document.getElementById("opaque-vr").setAttribute("material", "opacity", "1");
-    // $("#opaque-vr").attr("visible", "true");
-   
     if (responses.length <= num_trials) {
         responses.push({
+            targetName: switchBetweenCounters % 2 == 0? "A": "B",
             contrast: contrast,
-            frequency: Math.round(frequency * frequencyFactor * 100) / 100,
-            maxFrequency: maxFrequency * frequencyFactor, 
-            size_std: std/stddevFactor,
+            frequency: Math.round(frequency*frequencyFactor*100)/100,
+            maxFrequency: maxFrequency*frequencyFactor, 
+            size_std: std/10,
             position: position,
             trialTime: stimulusOff - stimulusOn,
       });
@@ -531,29 +554,62 @@ async function newTrial(response) {
             if ($("#9-position").prop("checked")){
                 angle = angleOrientation[counter];
             }
+            
+            if (switchBetweenCounters % 2 ==0){
+                push(contrastValues, "A", contrast);
+                
+                var lastElementB = contrastValues.B[contrastValues.B.length - 1];
+                contrast = lastElementB;
+     
+                console.log("B", contrast, frequency)
+            }else{
+                push(contrastValues, "B", contrast);
 
-            contrast = 1;
-            contrastValues = [1]
+                var lastElementA = contrastValues.A[contrastValues.A.length - 1];
+                contrast = lastElementA;
+    
+               console.log("A", contrast, frequency)
+            }
+
             canSee = false;
             high = 1;
             low = 0;
-            prevKey = "0";
-
+        
             //target disappears
-            let trial = ($("#9-position").prop("checked")) ? responses.length: responses.length + 1;
             gabor = createGabor(targetResolution, frequency, angle, std, 0.5, contrast);
             rr = gabor.toDataURL("image/png").split(';base64,')[1];
             document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
-            document.getElementById("bottom-text").setAttribute("text", "value", "Press A if you can see, B if you can't see \n\n" + trial + "/ " + num_trials);
+            document.getElementById("bottom-text").setAttribute("text", "value", "Press A if you can see, B if you can't see");
             document.getElementById("bottom-text").setAttribute("position", "0 -50 -148");
 
             acceptingResponses = true;
             if ($("#9-position").prop("checked")) {
                 position = [loc[counter][0], loc[counter][1],-150];
-                counter += 1;
-                if (counter == loc.length){
-                    counter = 0;
+                console.log(position, angle)
+                switchBetweenCounters +=1;
+                randomLocation = Math.floor(Math.random() * 9);
+                
+                // A
+                if (switchBetweenCounters % 2 === 0) {
+                    randomLocation = Math.floor(Math.random() * targetPositionCounter.A.length);
+                    counter = pop(targetPositionCounter.A, randomLocation);
+                    console.log("a", targetPositionCounter.A, counter);
+
+                    if (targetPositionCounter.A.length == 0){
+                        targetPositionCounter.A = Array.from({ length: 9 }, (_, index) => index);
+                    }
+                } else {
+                    // B
+                    randomLocation = Math.floor(Math.random() * targetPositionCounter.B.length);
+                    counter = pop(targetPositionCounter.B, randomLocation);
+                    console.log("b", targetPositionCounter.B, counter);
+
+                    if (targetPositionCounter.B.length == 0){
+                        targetPositionCounter.B = Array.from({ length: 9 }, (_, index) => index);
+                    }
                 }
+                
+              
                 document.getElementById("gabor-vr").setAttribute("position", position.join(" "));
                 
                 //target follows the 9 fixed positions
@@ -566,8 +622,13 @@ async function newTrial(response) {
                                         });
 
             }   
-           
-            Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "1") });
+            if ($("#random-location").prop("checked")) {
+                position = [Math.random() * positionVariation - positionVariation / 2, Math.random() * positionVariation - positionVariation / 2, -150];
+                document.getElementById("gabor-vr").setAttribute("position", position.join(" "));
+                Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "0") });
+            }
+            else {
+                Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "1") });
             
             if ($("#background-noise").prop("checked"))
                 document.getElementById("noise-vr").setAttribute("material", "opacity", "1");
@@ -578,18 +639,22 @@ async function newTrial(response) {
             $("#opaque-vr").attr("visible", "false");
             document.getElementById("sky").setAttribute("color", backgroundColor);
             stimulusOn = Date.now();
+            }
         }
 
     }, 1000);
 
     //if user has seen all 9 trials then we increase frequency by step
-    if(responses.length >= 10 && ((responses.length - 10)%9==0)){
+    console.log(responses.length) 
+    if(responses.length >= 18 && ((responses.length - 19)%9==0)){
         frequency += stepFrequency;
+        console.log(frequency)
     }
 
-    // if experiment has static location, we update frequency with every trial
-    if (responses.length >= 1 && !$("#9-position").prop("checked")){
+    // if experiment is random location or static location, we update frequency with every trial
+    if (responses.length >= 2 && !$("#9-position").prop("checked")){
         frequency += stepFrequency;
+        console.log(frequency);
     } 
 }
 
