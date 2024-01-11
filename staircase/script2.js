@@ -32,14 +32,14 @@ var angleOrientation = [0, -45, 90, 45, 0, 0, 45, 90, -45];
 var angle = 0;
 
 var positionContrastValues = {
-    "center": [],
-    "topLeft": [],
-    "topCenter": [],
-    "topRight": [],
-    "middleLeft": [],
-    "middleRight": [],
-    "bottomLeft": [],
-    "bottomRight": []
+    "center": [1],
+    "topLeft": [1],
+    "topCenter": [1],
+    "topRight": [1],
+    "middleLeft": [1],
+    "middleRight": [1],
+    "bottomLeft": [1],
+    "bottomRight": [1]
 };
 
 var positionYes = {
@@ -305,7 +305,7 @@ function updateLocation(){
 }
 
 function updateGabor(canSee){
-   
+ 
     if (canSee==true){
         high = contrast;
         contrast = (high + low)/2;
@@ -314,12 +314,9 @@ function updateGabor(canSee){
         low = contrast;
         contrast = (high + low) /2;
     }
-    
-    if (Math.abs(high-low) < 0.003 ){
-        newTrial(true);
-    }
-  
-    gabor = createGabor(targetResolution, frequency, angle, std, 0.5, contrast);
+    key = Object.keys(positionContrastValues)[counter];
+    positionContrastValues[key].push(contrast);
+    gabor = createGabor(targetResolution, frequency, angle, std, 0.5, positionContrastValues[key][-1]);
     rr = gabor.toDataURL("image/png").split(';base64,')[1];
     document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
     document.getElementById("bottom-text").setAttribute("text", "value", "Press A if you can see, B if you can't see");
@@ -507,11 +504,11 @@ function createGabor(side, frequency, orientation, std, phase, contrast) {
     return gabor;
 }
 
-function pop(arr, index) {
-    let temp = arr[index];
-    arr.splice(index, 1);
-    return temp;
-}
+// function pop(arr, index) {
+//     let temp = arr[index];
+//     arr.splice(index, 1);
+//     return temp;
+// }
 
 // function pushVal(obj, arrayKey, value) {
 //     obj[arrayKey].push(value);
@@ -594,13 +591,13 @@ async function newTrial(response) {
             
             key = Object.keys(positionContrastValues)[counter];
             // console.log("prob error", counter, key, positionContrastValues[key])
-            positionContrastValues[key].push(contrast);
+            //positionContrastValues[key].push(contrast);
 
             len = positionContrastValues[key].length;
             keyArray = positionContrastValues[key];
             if(positionYes[key] == 3){
-                    updateGabor(true);
-                    positionYes[key] = 0 ;
+                updateGabor(true);
+                positionYes[key] = 0;
 
 
                     // TODO: adjust the shifts
@@ -609,9 +606,10 @@ async function newTrial(response) {
            
             high = 1;
             low = 0;
-        
+            
             //target disappears
-            gabor = createGabor(targetResolution, frequency, angle, std, 0.5, contrast);
+            console.log("print", key, positionContrastValues[key][positionContrastValues[key].length-1])
+            gabor = createGabor(targetResolution, frequency, angle, std, 0.5, positionContrastValues[key][positionContrastValues[key].length-1]);
             rr = gabor.toDataURL("image/png").split(';base64,')[1];
             document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
             document.getElementById("bottom-text").setAttribute("text", "value", "Press A if you can see, B if you can't see");
@@ -620,16 +618,22 @@ async function newTrial(response) {
             acceptingResponses = true;
             if ($("#9-position").prop("checked")) {
                 position = [loc[counter][0], loc[counter][1],-150];
-                console.log(key,positionContrastValues[key]);
+                console.log(key, positionContrastValues[key]);
 
                 if (targetPositions.length == 0){
                     targetPositions = Array.from({ length: 9 }, (_, index) => index);
                 }
-                
+            
                 counter = Math.floor(Math.random() * targetPositions.length);
-                pop(targetPositions, counter);
-                console.log(counter, targetPositions)                   
-                          
+                const removedElement = targetPositions.splice(counter, 1);
+
+                // if (removedElement.length > 0) {
+                //     console.log(removedElement[0], targetPositions);
+                // } else {
+                //     console.log("Invalid index generated:", counter);
+                // }
+
+                                                   
                 document.getElementById("gabor-vr").setAttribute("position", position.join(" "));
                 
                 //target follows the 9 fixed positions
