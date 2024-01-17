@@ -229,10 +229,6 @@ $(document).ready(function () {
     $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="-7 -10 -150"></a-plane>');
     $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="7 -10 -150"></a-plane>');
 
-    //trials
-    //num_trials = Math.floor((maxFrequency - frequency) / stepFrequency) * loc.length * 2;
-    //trial_num();
-
     stimulusOn = Date.now();
     acceptingResponses = true;
     
@@ -258,8 +254,8 @@ $(document).ready(function () {
             if (keycode == "98") {
                
                 key = Object.keys(positionContrastHistory)[counter];
-                positionYes[key] = 0;
                 updateGaborContrast(false);
+                positionYes[key] = 0;
                 newTrial();
             }
         }
@@ -359,6 +355,7 @@ function updateLocation(){
 
 function updateGaborContrast(canSee){
     key = Object.keys(positionContrastHistory)[counter];
+    console.log("updating", key, counter)
     contrast = positionContrastHistory[key][positionContrastHistory[key].length-1];
 
     if (canSee==true){
@@ -375,6 +372,7 @@ function updateGaborContrast(canSee){
 
     last = shiftDirections[key].length - 1;
    
+    console.log(contrast);
     if (last - 1 >=0 && shiftDirections[key][last] != shiftDirections[key][last-1]){
        
         positionShifts[key] += 1;
@@ -574,15 +572,7 @@ function createGabor(side, frequency, orientation, std, phase, contrast) {
 
 //checks if all positions have shifted the threshold number of times
 function isConverged(obj) {
-
-    for (var i = 0; i < 9; i++){
-        key = Object.keys(obj)[i];
-       
-        if (obj[key] < convergenceThreshold){
-           return false;
-        }
-    }
-    return true;
+    return Object.values(obj).every(value => value >= convergenceThreshold);
 }
 
 //randomizes the target position 
@@ -639,7 +629,7 @@ async function newTrial(response) {
 
     await showNoise();
     setTimeout(async function () {
-        if(frequency >= maxFrequency) {
+        if(frequency > maxFrequency) {
             // END EXPERIMENT!
             document.getElementById("bottom-text").setAttribute("text", "value", "EXPERIMENT FINISHED!\n\nThanks for playing :)");
             json = {};
@@ -750,7 +740,7 @@ async function newTrial(response) {
             for (var i = 0; i < 9; i++){
                 key = Object.keys(positionShifts)[i];
                 positionShifts[key] = 0;
-                positionContrastHistory[key] = [];
+                positionContrastHistory[key] = [1];
                 positionYes[key] = 0;
                 positionHigh[key] = [1]
             }
@@ -777,9 +767,18 @@ async function newTrial(response) {
         });
      
         frequency += stepFrequency;
+        
+        //reset variables
         positionShifts.center = 0;
+        for (var i = 0; i < 9; i++){
+            key = Object.keys(positionYes)[i];
+            positionContrastHistory[key] = [1];
+            positionYes[key] = 0;
+            positionHigh[key] = [1];
+        }
     } 
 }
+
 
 function downloadObjectAsJson(exportObj, exportName) {
     var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
