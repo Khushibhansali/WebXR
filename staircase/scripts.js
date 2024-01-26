@@ -355,7 +355,6 @@ function updateLocation(){
 
 function updateGaborContrast(canSee){
     key = Object.keys(positionContrastHistory)[counter];
-    console.log("updating", key, counter)
     contrast = positionContrastHistory[key][positionContrastHistory[key].length-1];
 
     if (canSee==true){
@@ -372,7 +371,6 @@ function updateGaborContrast(canSee){
 
     last = shiftDirections[key].length - 1;
    
-    console.log(contrast);
     if (last - 1 >=0 && shiftDirections[key][last] != shiftDirections[key][last-1]){
        
         positionShifts[key] += 1;
@@ -734,7 +732,6 @@ async function newTrial(response) {
             });
 
             frequency += stepFrequency;
-            console.log(frequency)
 
             // reset all variables per position 
             for (var i = 0; i < 9; i++){
