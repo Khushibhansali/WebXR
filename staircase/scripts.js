@@ -245,7 +245,7 @@ $(document).ready(function () {
                 positionYes[key] += 1;
 
                 if(positionYes[key] == 3){
-                    updateGaborContrast(true);
+                    updateGaborContrast(true, key);
                     positionYes[key] = 0;
                 }
                 newTrial();
@@ -254,7 +254,7 @@ $(document).ready(function () {
             if (keycode == "98") {
                
                 key = Object.keys(positionContrastHistory)[counter];
-                updateGaborContrast(false);
+                updateGaborContrast(false, key);
                 positionYes[key] = 0;
                 newTrial();
             }
@@ -353,46 +353,34 @@ function updateLocation(){
     locationAdjusted = true;
 }
 
-function updateGaborContrast(canSee){
+function updateGaborContrast(canSee, currKey){
     key = Object.keys(positionContrastHistory)[counter];
-    contrast = positionContrastHistory[key][positionContrastHistory[key].length-1];
+    contrast = positionContrastHistory[currKey][positionContrastHistory[currKey].length-1];
 
     if (canSee==true){
-        positionHigh[key][0] = contrast;
-        contrast = (positionHigh[key][0])/2;
-
-        shiftDirections[key].push("down");
+        positionHigh[currKey][0] = contrast;
+        contrast = (positionHigh[currKey][0])/2;
+        shiftDirections[currKey].push("down");
     }else{
       
-        contrast = (positionHigh[key][0] + contrast) /2;
-     
-        shiftDirections[key].push("up");
+        contrast = (positionHigh[currKey][0] + contrast) /2;
+        shiftDirections[currKey].push("up");
     }
 
-    last = shiftDirections[key].length - 1;
+    last = shiftDirections[currKey].length - 1;
    
-    if (last - 1 >=0 && shiftDirections[key][last] != shiftDirections[key][last-1]){
-       
-        positionShifts[key] += 1;
+    if (last - 1 >=0 && shiftDirections[currKey][last] != shiftDirections[currKey][last-1]){
+        positionShifts[currKey] += 1;
      }
      
-    key = Object.keys(positionContrastHistory)[counter];
-    positionContrastHistory[key].push(contrast);
-    gabor = createGabor(targetResolution, frequency, angle, std, 0.5, positionContrastHistory[key][positionContrastHistory[key].length-1]);
-    rr = gabor.toDataURL("image/png").split(';base64,')[1];
-    document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
-    document.getElementById("bottom-text").setAttribute("text", "value", "Press A if you can see, B if you can't see");
-    document.getElementById("bottom-text").setAttribute("position", "0 -50 -148");
+    positionContrastHistory[currKey].push(contrast);
+    // gabor = createGabor(targetResolution, frequency, angle, std, 0.5, positionContrastHistory[currKey][positionContrastHistory[currKey].length-1]);
+    // rr = gabor.toDataURL("image/png").split(';base64,')[1];
+    // document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
+    // document.getElementById("bottom-text").setAttribute("text", "value", "Press A if you can see, B if you can't see");
+    // document.getElementById("bottom-text").setAttribute("position", "0 -50 -148");
 
 }
-
-function trial_num(){
-    if ($("#9-position").prop("checked")) {
-        num_trials = Math.floor((maxFrequency-frequency+stepFrequency)/stepFrequency) * loc.length * 2;
-    }else{
-        num_trials = Math.floor((maxFrequency-frequency+stepFrequency)/stepFrequency) * 2;
-    }
-} 
 
 async function showNoise() {
     if ($("#background-noise").prop("checked"))
@@ -627,7 +615,8 @@ async function newTrial(response) {
 
     await showNoise();
     setTimeout(async function () {
-        if(frequency > maxFrequency) {
+        
+        if(frequency > maxFrequency && targetPositions.length == 0 && isConverged(positionShifts)) {
             // END EXPERIMENT!
             document.getElementById("bottom-text").setAttribute("text", "value", "EXPERIMENT FINISHED!\n\nThanks for playing :)");
             json = {};
@@ -647,17 +636,6 @@ async function newTrial(response) {
                 angle = angleOrientation[counter];
             }
             
-            key = Object.keys(positionContrastHistory)[counter];
-            len = positionContrastHistory[key].length;
-            keyArray = positionContrastHistory[key];
-                              
-            //target disappears
-            gabor = createGabor(targetResolution, frequency, angle, std, 0.5, positionContrastHistory[key][positionContrastHistory[key].length-1]);
-            rr = gabor.toDataURL("image/png").split(';base64,')[1];
-            document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
-            document.getElementById("bottom-text").setAttribute("text", "value", "Press A if you can see, B if you can't see");
-            document.getElementById("bottom-text").setAttribute("position", "0 -50 -148");
-
             acceptingResponses = true;
             if ($("#9-position").prop("checked")) {
                 position = [loc[counter][0], loc[counter][1],-150];
@@ -681,11 +659,19 @@ async function newTrial(response) {
                     }else{
                         targetPositions = Array.from({ length: 9 }, (_, index) => index);
                     }
+
                     shuffle(targetPositions);        
                     console.log("next round");
                 }
     
                 counter = targetPositions.pop();
+                key = Object.keys(positionContrastHistory)[counter];
+
+                gabor = createGabor(targetResolution, frequency, angle, std, 0.5, positionContrastHistory[key][positionContrastHistory[key].length-1]);
+                rr = gabor.toDataURL("image/png").split(';base64,')[1];
+                document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
+                document.getElementById("bottom-text").setAttribute("text", "value", "Press A if you can see, B if you can't see");
+                document.getElementById("bottom-text").setAttribute("position", "0 -50 -148");
                                                               
                 document.getElementById("gabor-vr").setAttribute("position", position.join(" "));
 
@@ -732,6 +718,7 @@ async function newTrial(response) {
             });
 
             frequency += stepFrequency;
+            console.log(frequency)
 
             // reset all variables per position 
             for (var i = 0; i < 9; i++){
