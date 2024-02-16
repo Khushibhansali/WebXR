@@ -691,20 +691,20 @@ async function newTrial(response) {
 
     }, 1000);
 
-    //hide the target
-    // setTimeout(() => {
-    //     document.getElementById("gabor-vr").setAttribute("material", "opacity", "0");
-    //     var cuePosition=[[position[0], position[1] - 17, position[2]], 
-    //                  [position[0], position[1] - 3, position[2]],
-    //                  [position[0] + 7, position[1]-10, position[2]], 
-    //                  [position[0]- 7, position[1]- 10, position[2]]];
-    //     var index = 0;
-    //     Array.from(document.getElementsByClassName("cue")).forEach(function (e) { 
-    //                 e.setAttribute("material", "opacity", "0");
-    //                 e.setAttribute("position", cuePosition[index].join(" "));
-    //                 index+=1;
-    //             });
-    // },500); 
+   // hide the target
+    setTimeout(() => {
+        document.getElementById("gabor-vr").setAttribute("material", "opacity", "0");
+        var cuePosition=[[position[0], position[1] - 17, position[2]], 
+                     [position[0], position[1] - 3, position[2]],
+                     [position[0] + 7, position[1]-10, position[2]], 
+                     [position[0]- 7, position[1]- 10, position[2]]];
+        var index = 0;
+        Array.from(document.getElementsByClassName("cue")).forEach(function (e) { 
+                    e.setAttribute("material", "opacity", "0");
+                    e.setAttribute("position", cuePosition[index].join(" "));
+                    index+=1;
+                });
+    },250); 
 
      // if experiment is random location or static location, we update frequency with every trial
      if (positionShifts.center == convergenceThreshold && !$("#9-position").prop("checked")){
