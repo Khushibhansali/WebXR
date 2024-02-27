@@ -133,6 +133,7 @@ AFRAME.registerComponent('button-listener', {
         var el = this.el;
 
         el.addEventListener('abuttondown', function (evt) {
+            curr_key = Object.keys(positionContrastHistory)[counter];
             positionYes[curr_key] += 1;
 
             if(positionYes[curr_key] == 3){
@@ -143,6 +144,7 @@ AFRAME.registerComponent('button-listener', {
         });
 
         el.addEventListener('bbuttondown', function (evt) {
+            curr_key = Object.keys(positionContrastHistory)[counter];
             if (shiftDirections[curr_key].length >= 3 && shiftDirections[curr_key].slice(-3).every(direction => direction === "up")) {
                 if (!($("#9-position").prop("checked"))) {
                     pushResponses(positionContrastHistory[prev_key]);
