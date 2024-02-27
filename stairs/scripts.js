@@ -133,21 +133,38 @@ AFRAME.registerComponent('button-listener', {
         var el = this.el;
 
         el.addEventListener('abuttondown', function (evt) {
-            if (acceptingResponses){
-                positionYes[prev_key] += 1;
+            positionYes[curr_key] += 1;
 
-                if(positionYes[prev_key] == 3){
-                    currContrast = updateGaborContrast(true);
-                    positionYes[prev_key] = 0;
-                }
-                newTrial();
+            if(positionYes[curr_key] == 3){
+                currContrast = updateGaborContrast(true);
+                positionYes[curr_key] = 0;
             }
+            newTrial();
         });
 
         el.addEventListener('bbuttondown', function (evt) {
-            currContrast = updateGaborContrast(false);
-            positionYes[prev_key] = 0;
-            newTrial();
+            if (shiftDirections[curr_key].length >= 3 && shiftDirections[curr_key].slice(-3).every(direction => direction === "up")) {
+                if (!($("#9-position").prop("checked"))) {
+                    pushResponses(positionContrastHistory[prev_key]);
+                    
+                    if (frequency > maxFrequency){
+                        endExperiment();
+                    }else{
+
+                        frequency += maxFrequency; 
+                        
+                        //reset variables
+                        positionShifts.center = 0;
+                        positionContrastHistory.center = [1];
+                        positionYes.center = 0;
+                        positionHigh.center = [1];
+                    }
+                }
+            }else{
+                currContrast = updateGaborContrast(false);
+                positionYes[curr_key] = 0;
+                newTrial();
+            }
         });
       
         el.addEventListener('gripdown', function (evt) {
@@ -367,7 +384,7 @@ function updateGaborContrast(canSee){
         positionShifts[curr_key] += 1;
     }
     positionContrastHistory[curr_key].push(contrast);
-    console.log("after update:", curr_key,  positionContrastHistory[curr_key]);
+    // console.log("after update:", curr_key,  positionContrastHistory[curr_key]);
 
 }
 
@@ -637,7 +654,7 @@ function pushResponses(objArray){
     }
 
     if(isConverged(positionShifts)){
-        console.log("experiment finished!");
+        //console.log("experiment finished!");
         if(frequency < maxFrequency){
             frequency += stepFrequency;
             for (var i = 0; i < 9; i++){
@@ -687,7 +704,7 @@ async function newTrial() {
 
                         targetPositions = Object.keys(positionShifts).filter(key => positionShifts[key] < convergenceThreshold);
                         targetPositions = targetPositions.map(key => Object.keys(positionShifts).indexOf(key));                        
-                        console.log("target positions", targetPositions)
+                        // console.log("target positions", targetPositions)
                         var finshedPositions = Object.keys(positionShifts).filter(key => positionShifts[key] >= convergenceThreshold)
                         finshedPositions.forEach(finished => pushResponses(positionContrastHistory[finished]));
                     }else {
@@ -705,9 +722,12 @@ async function newTrial() {
                 objArray = positionContrastHistory[key];
                 trials_remaining = (8 - targetPositions.length) ;
 
-                const bold = "font-weight: bold";
-                console.log("%ctrial num: %d %s #yes: %d #shifts: %d contrast:", bold, trials_remaining, key, positionYes[key], positionShifts[key], positionContrastHistory[key]);
+                // const bold = "font-weight: bold";
+                // console.log("%ctrial num: %d %s #yes: %d #shifts: %d contrast:", bold, trials_remaining, key, positionYes[key], positionShifts[key], positionContrastHistory[key]);
 
+                //additional delay
+                setTimeout(() => {
+                }, 1000);
                 makeGabor(objArray);
                 
             }
@@ -717,9 +737,12 @@ async function newTrial() {
                 } 
 
                 //for debug only
-                const bold = "font-weight: bold";
-                console.log("%c%s #yes: %d #shifts: %d contrast:", bold, "center", positionYes.center, positionShifts.center, positionContrastHistory.center);
+                // const bold = "font-weight: bold";
+                // console.log("%c%s #yes: %d #shifts: %d contrast:", bold, "center", positionYes.center, positionShifts.center, positionContrastHistory.center);
 
+                //additional delay
+                setTimeout(() => {
+                }, 1000);
                 makeGabor(positionContrastHistory.center);
             }   
 
