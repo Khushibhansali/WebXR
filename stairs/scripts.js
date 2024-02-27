@@ -136,7 +136,7 @@ AFRAME.registerComponent('button-listener', {
             curr_key = Object.keys(positionContrastHistory)[counter];
             positionYes[curr_key] += 1;
 
-            if(positionYes[curr_key] == 3){
+            if(positionYes[curr_key] == 2){
                 currContrast = updateGaborContrast(true);
                 positionYes[curr_key] = 0;
             }
@@ -145,7 +145,7 @@ AFRAME.registerComponent('button-listener', {
 
         el.addEventListener('bbuttondown', function (evt) {
             curr_key = Object.keys(positionContrastHistory)[counter];
-            if (shiftDirections[curr_key].length >= 3 && shiftDirections[curr_key].slice(-3).every(direction => direction === "up")) {
+            if (shiftDirections[curr_key].length >= 2 && shiftDirections[curr_key].slice(-2).every(direction => direction === "up")) {
                 if (!($("#9-position").prop("checked"))) {
                     pushResponses(positionContrastHistory[prev_key]);
                     
@@ -161,6 +161,10 @@ AFRAME.registerComponent('button-listener', {
                         positionYes.center = 0;
                         positionHigh.center = [1];
                     }
+                }else{
+                    currContrast = updateGaborContrast(true);
+                    positionYes[curr_key] = 0;
+                    newTrial();
                 }
             }else{
                 currContrast = updateGaborContrast(false);
@@ -243,14 +247,14 @@ $(document).ready(function () {
             if (keycode == 97 || keycode==38) {
                 positionYes[curr_key] += 1;
 
-                if(positionYes[curr_key] == 3){
+                if(positionYes[curr_key] == 2){
                     currContrast = updateGaborContrast(true);
                     positionYes[curr_key] = 0;
                 }
                 newTrial();
             } else if (keycode == 98 || keycode==40) {
      
-                if (shiftDirections[curr_key].length >= 3 && shiftDirections[curr_key].slice(-3).every(direction => direction === "up")) {
+                if (shiftDirections[curr_key].length >= 2 && shiftDirections[curr_key].slice(-2).every(direction => direction === "up")) {
                     if (!($("#9-position").prop("checked"))) {
                         pushResponses(positionContrastHistory[prev_key]);
                         
@@ -266,6 +270,10 @@ $(document).ready(function () {
                             positionYes.center = 0;
                             positionHigh.center = [1];
                         }
+                    }else{
+                        currContrast = updateGaborContrast(true);
+                        positionYes[curr_key] = 0;
+                        newTrial();
                     }
                 }else{
                     currContrast = updateGaborContrast(false);
@@ -626,13 +634,18 @@ function makeGabor(objArray){
     });
 
     document.getElementById("gabor-vr").setAttribute("material", "opacity", "1");
-    Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "1");});
     gabor = createGabor(targetResolution, frequency, angle, std, 0.5, objArray[objArray.length-1]);
     rr = gabor.toDataURL("image/png").split(';base64,')[1];
-    document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
-    document.getElementById("gabor-vr").setAttribute("visible", "true");
-    document.getElementById("gabor-vr").setAttribute("position", position.join(" "));
-    $("#gabor").html(gabor);
+
+    setTimeout(() => {
+        document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
+        document.getElementById("gabor-vr").setAttribute("visible", "true");
+        document.getElementById("gabor-vr").setAttribute("position", position.join(" "));
+        $("#gabor").html(gabor);
+    }, 750);
+
+    document.getElementById("gabor-vr").setAttribute("material", "opacity", "0");
+    document.getElementById("gabor-vr").setAttribute("visible", "false");
 }
 
 function pushResponses(objArray){
@@ -727,9 +740,6 @@ async function newTrial() {
                 // const bold = "font-weight: bold";
                 // console.log("%ctrial num: %d %s #yes: %d #shifts: %d contrast:", bold, trials_remaining, key, positionYes[key], positionShifts[key], positionContrastHistory[key]);
 
-                //additional delay
-                setTimeout(() => {
-                }, 1000);
                 makeGabor(objArray);
                 
             }
@@ -738,19 +748,14 @@ async function newTrial() {
                     pushResponses(positionContrastHistory.center);
                 } 
 
-                //for debug only
                 // const bold = "font-weight: bold";
                 // console.log("%c%s #yes: %d #shifts: %d contrast:", bold, "center", positionYes.center, positionShifts.center, positionContrastHistory.center);
 
-                //additional delay
-                setTimeout(() => {
-                }, 1000);
                 makeGabor(positionContrastHistory.center);
             }   
 
             //Make target flash
             setTimeout(() => {
-                Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "1") });
             
                 if ($("#background-noise").prop("checked"))
                     document.getElementById("noise-vr").setAttribute("material", "opacity", "1");
@@ -765,7 +770,7 @@ async function newTrial() {
                 setTimeout(() => {
                     document.getElementById("gabor-vr").setAttribute("material", "opacity", "0");
                     Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "0"); });
-                }, 750);
+                }, 1000);
             
             }, 250);              
         
