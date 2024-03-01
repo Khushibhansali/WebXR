@@ -737,8 +737,8 @@ async function newTrial() {
                 objArray = positionContrastHistory[key];
                 trials_remaining = (8 - targetPositions.length) ;
 
-                // const bold = "font-weight: bold";
-                // console.log("%ctrial num: %d %s #yes: %d #shifts: %d contrast:", bold, trials_remaining, key, positionYes[key], positionShifts[key], positionContrastHistory[key]);
+                const bold = "font-weight: bold";
+                console.log("%ctrial num: %d %s #yes: %d #shifts: %d contrast:", bold, trials_remaining, key, positionYes[key], positionShifts[key], positionContrastHistory[key]);
 
                 makeGabor(objArray);
                 
