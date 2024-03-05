@@ -299,7 +299,7 @@ $(document).ready(function () {
         document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
     });
 
-/* If frequency changed, we update the angle of the target based on current location 
+    /* If frequency changed, we update the angle of the target based on current location 
     and type of experiment (9 loc, random loc, or static loc). We also
     convert new frequency value to units we want, recalculate total trials, and redraw target gabor */
     $("#frequency").change(function () {
@@ -313,12 +313,12 @@ $(document).ready(function () {
         document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
     });
 
-/* If max freq changed we recalculate total trials and convert new max frequency to units we want  */
+    /* If max freq changed we recalculate total trials and convert new max frequency to units we want  */
     $("#max-frequency").change(function () {
         maxFrequency = Math.ceil(parseFloat($("#max-frequency").val()) * cyclesPerDegreeFactor * 100)/100;
     });
 
-/* If step freq changed we recalculate total trials and convert new step frequency to units we want  */
+    /* If step freq changed we recalculate total trials and convert new step frequency to units we want  */
     $("#step-frequency").change(function () {
         stepFrequency= Math.ceil(parseFloat($("#step-frequency").val()) * cyclesPerDegreeFactor * 100)/100;
     });
@@ -328,6 +328,10 @@ $(document).ready(function () {
         updateLocation();
     });
 
+    /* If convergence Threshold between targets is updated, recalculate */
+    $("#convergenceThreshold").change(function () {
+        convergenceThreshold = parseFloat($("#convergenceThreshold").val());
+    });
 
     $("#background-noise").change(function () {
         showNoise();
@@ -704,6 +708,7 @@ async function newTrial() {
         if ((frequency >= maxFrequency && isConverged(positionShifts))|| 
         (frequency >= maxFrequency && positionShifts[prev_key] == convergenceThreshold && !$("#9-position").prop("checked"))){
         
+            console.log(convergenceThreshold, frequency >= maxFrequency, isConverged(positionShifts));
             for (var i = 0; i < 9; i++){
                 key = Object.keys(positionShifts)[i];
                 pushResponses(positionContrastHistory[key], key);
@@ -725,7 +730,7 @@ async function newTrial() {
                         targetPositions = Object.keys(positionShifts).filter(key => positionShifts[key] < convergenceThreshold);
                         targetPositions = targetPositions.map(key => Object.keys(positionShifts).indexOf(key));                        
                         
-                        console.log("target positions", Object.keys(positionShifts).filter(key => positionShifts[key] >= convergenceThreshold));
+                        console.log("target positions", convergenceThreshold, Object.keys(positionShifts).filter(key => positionShifts[key] >= convergenceThreshold));
         
                     }else {
                         targetPositions = Array.from({ length: 9 }, (_, index) => index);
