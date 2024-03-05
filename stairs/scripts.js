@@ -56,9 +56,6 @@ var convergenceThreshold = 7;
 // add 0 back if you want to have first target as trials
 var targetPositions = [1, 2, 3, 4, 5, 6, 7, 8];
 
-// acts as index for all dictionarys
-var counter = 0;
-
 //dictionary to monitor contrast history per position
 var positionContrastHistory = {
     "center": [1],
@@ -147,7 +144,7 @@ AFRAME.registerComponent('button-listener', {
             curr_key = Object.keys(positionContrastHistory)[counter];
             if (shiftDirections[curr_key].length >= 2 && shiftDirections[curr_key].slice(-2).every(direction => direction === "up")) {
                 if (!($("#9-position").prop("checked"))) {
-                    pushResponses(positionContrastHistory[prev_key]);
+                    pushResponses(positionContrastHistory[prev_key], prev_key);
                     
                     if (frequency > maxFrequency){
                         endExperiment();
@@ -244,7 +241,7 @@ $(document).ready(function () {
 
         if (acceptingResponses) {
             curr_key = Object.keys(positionContrastHistory)[counter];
-            if (keycode == 97 || keycode==38) {
+            if (keycode == 97 || keycode == 65 || keycode == 38) {
                 positionYes[curr_key] += 1;
 
                 if(positionYes[curr_key] == 2){
@@ -252,11 +249,11 @@ $(document).ready(function () {
                     positionYes[curr_key] = 0;
                 }
                 newTrial();
-            } else if (keycode == 98 || keycode==40) {
+            } else if (keycode == 98 || keycode == 66 || keycode == 40) {
      
                 if (shiftDirections[curr_key].length >= 2 && shiftDirections[curr_key].slice(-2).every(direction => direction === "up")) {
                     if (!($("#9-position").prop("checked"))) {
-                        pushResponses(positionContrastHistory[prev_key]);
+                        pushResponses(positionContrastHistory[prev_key], prev_key);
                         
                         if (frequency > maxFrequency){
                             endExperiment();
@@ -648,16 +645,19 @@ function makeGabor(objArray){
     document.getElementById("gabor-vr").setAttribute("visible", "false");
 }
 
-function pushResponses(objArray){
-    responses.push({
-        targetName: prev_key,
-        contrast: objArray.slice(0, -1),
-        frequency: Math.round(frequency * frequencyFactor*100)/100,
-        maxFrequency: maxFrequency*frequencyFactor, 
-        size_std: std/10,
-        position: position,
-        trialTime: stimulusOff - stimulusOn,
-    });
+function pushResponses(objArray, key_to_push){
+
+    if (!responses.some(item => item.targetName === key_to_push && item.frequency === frequency)) {
+        responses.push({
+            targetName: key_to_push,
+            contrast: objArray.slice(0, -1),
+            frequency: Math.round(frequency * frequencyFactor*100)/100,
+            maxFrequency: maxFrequency*frequencyFactor, 
+            size_std: std/10,
+            position: position,
+            trialTime: stimulusOff - stimulusOn,
+        });
+    }
 
     //reset variables
     if (!$("#9-position").prop("checked") && frequency < maxFrequency && positionShifts.center == convergenceThreshold){
@@ -703,7 +703,12 @@ async function newTrial() {
 
         if ((frequency >= maxFrequency && isConverged(positionShifts))|| 
         (frequency >= maxFrequency && positionShifts[prev_key] == convergenceThreshold && !$("#9-position").prop("checked"))){
-            pushResponses(positionContrastHistory[prev_key]);
+        
+            for (var i = 0; i < 9; i++){
+                key = Object.keys(positionShifts)[i];
+                pushResponses(positionContrastHistory[key], key);
+            }
+        
             endExperiment();
         } else {
             // NEW TRIAL INFO
@@ -714,14 +719,14 @@ async function newTrial() {
                 //if all nine locations are complete then restart counter
                 if (targetPositions.length == 0){
                     
-                    // Filter out the converged positions and add the remaining positions to targetPositions
+                    // Filter out the converged positions from TARGET and add the remaining positions to targetPositions
                     if (Object.values(positionShifts).some(shift => shift >= convergenceThreshold)) {
 
                         targetPositions = Object.keys(positionShifts).filter(key => positionShifts[key] < convergenceThreshold);
                         targetPositions = targetPositions.map(key => Object.keys(positionShifts).indexOf(key));                        
-                        // console.log("target positions", targetPositions)
-                        var finshedPositions = Object.keys(positionShifts).filter(key => positionShifts[key] >= convergenceThreshold)
-                        finshedPositions.forEach(finished => pushResponses(positionContrastHistory[finished]));
+                        
+                        console.log("target positions", Object.keys(positionShifts).filter(key => positionShifts[key] >= convergenceThreshold));
+        
                     }else {
                         targetPositions = Array.from({ length: 9 }, (_, index) => index);
                     }
@@ -738,14 +743,15 @@ async function newTrial() {
                 trials_remaining = (8 - targetPositions.length) ;
 
                 const bold = "font-weight: bold";
-                console.log("%ctrial num: %d %s #yes: %d #shifts: %d contrast:", bold, trials_remaining, key, positionYes[key], positionShifts[key], positionContrastHistory[key]);
+                console.log("%c %s #yes: %d #shifts: %d contrast:", bold, key, positionYes[key], positionShifts[key], positionContrastHistory[key]);
 
                 makeGabor(objArray);
                 
             }
             else{
                 if (positionShifts.center == convergenceThreshold){
-                    pushResponses(positionContrastHistory.center);
+                    key = Object.keys(positionContrastHistory)[0];
+                    pushResponses(positionContrastHistory.center, key);
                 } 
 
                 // const bold = "font-weight: bold";
