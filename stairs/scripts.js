@@ -381,9 +381,17 @@ function updateGaborContrast(canSee){
     curr_key =  Object.keys(positionContrastHistory)[counter];
     objArray = positionContrastHistory[curr_key]
     contrast = objArray[objArray.length-1];
+    
     if (canSee==true){
         positionHigh[curr_key][0] = contrast;
         contrast = (positionHigh[curr_key][0])/2;
+
+        //if contrast is too small, end the target
+        if (contrast < (1/256)){
+            contrast = (1/256);
+            positionShifts[curr_key] = convergenceThreshold;
+        }
+
         shiftDirections[curr_key].push("down");
     }else{
         contrast = (positionHigh[curr_key][0] + contrast) /2;
