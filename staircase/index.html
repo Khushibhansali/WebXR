@@ -30,14 +30,14 @@
                 material="color: white; opacity: 1;" visible="false"></a-entity>
             <a-entity id="alignment" visible="false"></a-entity>
             <a-entity id="main">
-                <a-entity id="bottom-text" text="value: Press A if you can see, B if you can't see; align: center; width: 50"
-                    position="0 -25 -150"></a-entity>
+                <a-entity id="bottom-text" text="value: Press A to confirm, Press B to reset contrast,Press up/down to adjust contrast; align: center; width: 50"
+                    position="0 -50 -150"></a-entity>
             </a-entity>
         </a-entity>
         <a id="myEnterVRButton" href="#">START!</a>
     </a-scene>
     <div id="info">
-        <p>Press A if you can see, press B if not</p>
+        
         <p>Participant ID: <input type="text" class="input" id="participant-id">
         </p>
         <p>Size (std in meters): <input type="text" class="input" id="size-std" value="1.2">
@@ -77,15 +77,15 @@
 
     // Add event listeners for input validation
     frequencyInput.addEventListener("input", function() {
-        validateFreqInput(frequencyInput);
+        validateInput(frequencyInput);
     });
 
     maxFrequencyInput.addEventListener("input", function() {
-      validateFreqInput(maxFrequencyInput);
+        validateInput(maxFrequencyInput);
     });
 
     stepFrequencyInput.addEventListener("input", function() {
-      validateFreqInput(stepFrequencyInput);
+        validateInput(stepFrequencyInput);
     });
 
     gaussianSigma.addEventListener("input", function() {
@@ -94,7 +94,7 @@
   
   
     // Function to validate input
-    function validateFreqInput(inputElement) {
+    function validateInput(inputElement) {
       var inputValue = parseFloat(inputElement.value);
   
       // Check if the input is less than 0
