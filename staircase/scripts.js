@@ -67,42 +67,42 @@ var positionContrastHistory = {
 
 //dictionary to monitor contrast high in 1st element and low in 2nd element per position
 var Imax ={
-    "center": [256],
-    "topLeft": [256],
-    "topCenter": [256],
-    "topRight": [256],
-    "middleLeft": [256],
-    "middleRight": [256],
-    "bottomLeft": [256],
-    "bottomCenter": [256],
-    "bottomRight": [256] 
+    "center": 256,
+    "topLeft": 256,
+    "topCenter": 256,
+    "topRight": 256,
+    "middleLeft": 256,
+    "middleRight": 256,
+    "bottomLeft": 256,
+    "bottomCenter": 256,
+    "bottomRight": 256 
 }
 
 
 //dictionary to monitor contrast high in 1st element and low in 2nd element per position
 var Imin = {
-    "center": [0],
-    "topLeft": [0],
-    "topCenter": [0],
-    "topRight": [0],
-    "middleLeft": [0],
-    "middleRight": [0],
-    "bottomLeft": [0],
-    "bottomCenter": [0],
-    "bottomRight": [0] 
+    "center": 0,
+    "topLeft": 0,
+    "topCenter": 0,
+    "topRight": 0,
+    "middleLeft": 0,
+    "middleRight": 0,
+    "bottomLeft": 0,
+    "bottomCenter": 0,
+    "bottomRight": 0 
 }
 
 //dictionary to monitor yes per position 
 var positionDelta= {
-    "center": 64,
-    "topLeft": 64,
-    "topCenter": 64,
-    "topRight": 64,
-    "middleLeft": 64,
-    "middleRight": 64,
-    "bottomLeft": 64,
-    "bottomCenter": 64,
-    "bottomRight": 64
+    "center": 128,
+    "topLeft": 128,
+    "topCenter": 128,
+    "topRight": 128,
+    "middleLeft": 128,
+    "middleRight": 128,
+    "bottomLeft": 128,
+    "bottomCenter": 128,
+    "bottomRight": 128
 };
 
 //dictionary to monitor yes per position 
@@ -157,7 +157,7 @@ AFRAME.registerComponent('button-listener', {
             positionYes[curr_key] += 1;
 
             if(positionYes[curr_key] == 2){
-                currContrast = updateGaborContrast(true, -1, 1);
+                currContrast = updateGaborContrast(true);
                 positionYes[curr_key] = 0;
             }
             newTrial();
@@ -179,15 +179,15 @@ AFRAME.registerComponent('button-listener', {
                         positionShifts.center = 0;
                         positionContrastHistory.center = [1];
                         positionYes.center = 0;
-                        Imax.center = [256];
+                        Imax.center = 256;
                     }
                 }else{
-                    currContrast = updateGaborContrast(true, 1, -1);
+                    currContrast = updateGaborContrast(true);
                     positionYes[curr_key] = 0;
                     newTrial();
                 }
             }else{
-                currContrast = updateGaborContrast(false, 1, -1);
+                currContrast = updateGaborContrast(false);
                 positionYes[curr_key] = 0;
                 newTrial();
             }
@@ -258,7 +258,7 @@ $(document).ready(function () {
         e.stopPropagation();
     });
 
-    /* Registers keyboard input a->97 (increase contrast) and b->98 (decrease contrast) */
+    /* Registers keyboard input a->97 and up arrow (increase contrast) and b->98 and down arrow(decrease contrast) */
     $(document).on('keydown keyup keypress', function (event) {
         let keycode = (event.keyCode ? event.keyCode : event.which);
 
@@ -268,13 +268,14 @@ $(document).ready(function () {
                 positionYes[curr_key] += 1;
 
                 if(positionYes[curr_key] == 2){
-                    currContrast = updateGaborContrast(true, -1, 1);
+                    currContrast = updateGaborContrast(true);
                     positionYes[curr_key] = 0;
                 }
                 newTrial();
             } else if (keycode == 98 || keycode == 66 || keycode == 40) {
      
                 if (shiftDirections[curr_key].length >= 2 && shiftDirections[curr_key].slice(-2).every(direction => direction === "up")) {
+                    
                     if (!($("#9-position").prop("checked"))) {
                         pushResponses(positionContrastHistory[prev_key], prev_key);
                         
@@ -288,15 +289,15 @@ $(document).ready(function () {
                             positionShifts.center = 0;
                             positionContrastHistory.center = [1];
                             positionYes.center = 0;
-                            Imax.center = [256];
+                            Imax.center = 256;
                         }
                     }else{
-                        currContrast = updateGaborContrast(true, 1, -1);
+                        currContrast = updateGaborContrast(true);
                         positionYes[curr_key] = 0;
                         newTrial();
                     }
                 }else{
-                    currContrast = updateGaborContrast(false, 1, -1);
+                    currContrast = updateGaborContrast(false);
                     positionYes[curr_key] = 0;
                     newTrial();
                 }
@@ -401,43 +402,46 @@ function updateLocation(){
 }
 /* Adjusts contrast*/
 function updateGaborContrast(canSee){
-    curr_key =  Object.keys(positionContrastHistory)[counter];
-    objArray = positionContrastHistory[curr_key]
-    contrast = objArray[objArray.length-1];
-    last = shiftDirections[curr_key].length - 1;
+    const curr_key = Object.keys(positionContrastHistory)[counter];
+    const objArray = positionContrastHistory[curr_key];
+    let contrast = objArray[objArray.length - 1] * 256;  // Scale up to work on original scale
+    const last = shiftDirections[curr_key].length - 1;
 
-    if (canSee==true){
-        contrast = (Imax[curr_key][0] - Imin[curr_key][0]) / (Imax[curr_key][0] + Imin[curr_key][0]);
-        Imax[curr_key][0] -= positionDelta[curr_key];
-        Imin[curr_key][0] += positionDelta[curr_key];
-        positionDelta[curr_key] /= 2;
+    if (positionDelta[curr_key] <= 1) {
+        console.log("Skipping trial due to small delta:", positionDelta[curr_key]);
+        positionContrastHistory[curr_key].push(contrast / 256); 
+        return; 
+    }
+
+    if (canSee){
+        // Simply halve the current contrast
+        contrast /= 2;
         shiftDirections[curr_key].push("down");
-        
-    }else{
-        if(shiftDirections[curr_key][last] == "down" && shiftDirections[curr_key][last - 1] == "down"){
-            positionDelta[curr_key] *= 4;
-        }
-        if(shiftDirections[curr_key][last] == "up" && shiftDirections[curr_key][last-1]=="down"){
+    } else {
+        // Determine positionDelta adjustment based on shift directions
+        if (last >= 1 && shiftDirections[curr_key][last] == "down" && shiftDirections[curr_key][last - 1] == "down") {
+            positionDelta[curr_key] *= 2;
+        } else if (last >= 1 && shiftDirections[curr_key][last] == "up" && shiftDirections[curr_key][last - 1] == "down") {
             positionDelta[curr_key] /= 4;
-        }
-        if(shiftDirections[curr_key][last] == "up" && shiftDirections[curr_key][last-1]=="up"){
+        } else if (last >= 1 && shiftDirections[curr_key][last] == "up" && shiftDirections[curr_key][last - 1] == "up") {
             positionDelta[curr_key] /= 2;
         }
 
-        Imax[curr_key][0] += positionDelta[curr_key];
-        Imin[curr_key][0] -= positionDelta[curr_key];
-        contrast = (Imax[curr_key][0] - Imin[curr_key][0]) / (Imax[curr_key][0] + Imin[curr_key][0]);
+        // Average of the last two contrasts if available, else halve
+        if (objArray.length > 1) {
+            contrast = (objArray[objArray.length - 1] * 256 + objArray[objArray.length - 2] * 256) / 2;
+        } else {
+            contrast /= 2;  // Fallback if not enough history
+        }
         shiftDirections[curr_key].push("up");
-    } 
-
-    last = shiftDirections[curr_key].length - 1;
-    if (last - 1 >=0 && shiftDirections[curr_key][last] != shiftDirections[curr_key][last-1]){
-        positionShifts[curr_key] += 1;
     }
 
-    console.log("key", curr_key, contrast);
-    positionContrastHistory[curr_key].push(contrast);
+    // Adjust Imax and Imin based on the new contrast
+    Imax[curr_key] = Imin[curr_key] + contrast;
+    Imin[curr_key] = Imax[curr_key] - contrast;
 
+    contrast /= 256;  // Normalize the contrast for storing
+    positionContrastHistory[curr_key].push(contrast);
 }
 
 async function showNoise() {
