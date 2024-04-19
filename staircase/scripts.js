@@ -407,6 +407,11 @@ function updateGaborContrast(canSee){
     let contrast = objArray[objArray.length - 1] * 256;  // Scale up to work on original scale
     const last = shiftDirections[curr_key].length - 1;
 
+    //count number of shifts for current position
+    if (last - 1 >=0 && shiftDirections[curr_key][last] != shiftDirections[curr_key][last-1]){
+        positionShifts[curr_key] += 1;
+    }
+
     if (positionDelta[curr_key] <= 1) {
         console.log("Skipping trial due to small delta:", positionDelta[curr_key]);
         positionContrastHistory[curr_key].push(contrast / 256); 
