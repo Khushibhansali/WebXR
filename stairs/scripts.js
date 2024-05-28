@@ -666,7 +666,6 @@ function createGabor(side, freq, orientation, stdev, phase, contrast) {
 function isConverged() {
     for (var i = 1; i < 9; i++) {
         key = Object.keys(positionShifts)[i];
-        console.log("lklkl", positionShifts[key] < convergenceThreshold, smallTargets[key] == 0);
         if (positionShifts[key] < convergenceThreshold || smallTargets[key] == 0){
             return false;
         }
@@ -811,7 +810,7 @@ async function newTrial() {
                         targetPositions = targetPositions.map(key => Object.keys(positionContrastHistory).indexOf(key));
                         console.log("Skipping trial due to small delta:", isConverged(),  targetPositions.length==0);
                
-                        if (isConverged() && targetPositions.length === 0) {
+                        if (isConverged() && targetPositions.length==0) {
                            
                             for (var i = 0; i < 9; i++) {
                                 key = Object.keys(positionShifts)[i];
