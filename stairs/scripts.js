@@ -107,7 +107,7 @@ var positionDelta = {
 
 //dictionary to monitor yes per position 
 var positionYes = {
-    "center": 0,
+    "center": 1,
     "topLeft": 1,
     "topCenter": 1,
     "topRight": 1,
@@ -142,6 +142,19 @@ var shiftDirections = {
     "bottomLeft": [],
     "bottomCenter": [],
     "bottomRight": []
+}
+
+// boolean to help keep track of small contrast values
+var smallTargets = {
+    "center": false,
+    "topLeft": false,
+    "topCenter": false,
+    "topRight": false,
+    "middleLeft": false,
+    "middleRight": false,
+    "bottomLeft": false,
+    "bottomCenter": false,
+    "bottomRight": false
 }
 
 //keeps track of the last key
@@ -446,6 +459,7 @@ function updateGaborContrast(canSee) {
     contrast /= 255; // Normalize the contrast for storing
 
     if (contrast < (1 / 255)) {
+        smallTargets[curr_key] = true;
         console.log("Skipping trial due to contrast:", contrast);
         return;
     }
@@ -653,6 +667,8 @@ function isConverged(obj) {
     return Object.values(obj).every(value => value >= convergenceThreshold);
 }
 
+
+
 //randomizes the target position 
 function shuffle(array) {
     let currentIndex = array.length, randomIndex;
@@ -758,8 +774,8 @@ async function newTrial() {
     await showNoise();
     setTimeout(async function () {
 
-        if ((frequency >= maxFrequency && isConverged(positionShifts)) ||
-            (frequency >= maxFrequency && positionShifts[prev_key] == convergenceThreshold && !$("#9-position").prop("checked"))) {
+        if ((frequency >= maxFrequency && isConverged(positionShifts)) || (Object.values(smallTargets).every(c => c == (True)) || 
+            (frequency >= maxFrequency && positionShifts[prev_key] == convergenceThreshold && !$("#9-position").prop("checked")))) {
 
             console.log(convergenceThreshold, frequency >= maxFrequency, isConverged(positionShifts));
             for (var i = 0; i < 9; i++) {
@@ -787,7 +803,7 @@ async function newTrial() {
                         targetPositions = Array.from({ length: 9 }, (_, index) => index);
                     }
 
-                    if (Object.values(positionContrastHistory).some(c => c <= (1 / 255))) {
+                    if (Object.values(smallTargets).some(c => c == true)) {
                         targetPositions = Object.keys(positionContrastHistory).filter(key => positionContrastHistory[key] > (1 / 255));
                         targetPositions = targetPositions.map(key => Object.keys(positionContrastHistory).indexOf(key));
                         console.log("Skipping trial due to small delta:", Object.keys(positionContrastHistory)[counter], targetPositions);
