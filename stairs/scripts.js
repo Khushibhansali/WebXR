@@ -54,15 +54,15 @@ var targetPositions = [1, 2, 3, 4, 5, 6, 7, 8];
 
 //dictionary to monitor contrast history per position
 var positionContrastHistory = {
-    "center": [1],
-    "topLeft": [1],
-    "topCenter": [1],
-    "topRight": [1],
-    "middleLeft": [1],
-    "middleRight": [1],
-    "bottomLeft": [1],
-    "bottomCenter": [1],
-    "bottomRight": [1]
+    "center": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.009765625],
+    "topLeft": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.009765625],
+    "topCenter": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.009765625],
+    "topRight": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.009765625],
+    "middleLeft": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.009765625],
+    "middleRight": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.009765625],
+    "bottomLeft": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.009765625],
+    "bottomCenter": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.009765625],
+    "bottomRight": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.009765625]
 };
 
 //dictionary to monitor contrast high in 1st element and low in 2nd element per position
@@ -826,14 +826,13 @@ async function newTrial() {
                     }
                 }
 
-                
-                
-
+         
                 prev_key = Object.keys(positionContrastHistory)[counter];
                 angle = angleOrientation[counter];
                 position = [loc[counter][0], loc[counter][1], -150];
 
                 counter = targetPositions.pop();
+                console.log(counter, targetPositions);
                 key = Object.keys(positionContrastHistory)[counter];
                 objArray = positionContrastHistory[key];
               
