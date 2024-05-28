@@ -816,7 +816,7 @@ async function newTrial() {
                                 key = Object.keys(positionShifts)[i];
                                 pushResponses(positionContrastHistory[key], key);
                             }
-                
+                            console.log("end");
                             endExperiment();
                         }else{
                             shuffle(targetPositions);
