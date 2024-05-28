@@ -809,7 +809,7 @@ async function newTrial() {
                     } else if (Object.values(smallTargets).some(c => c == 1)) {
                         targetPositions = Object.keys(positionContrastHistory).filter(key => positionContrastHistory[key] > (1 / 255));
                         targetPositions = targetPositions.map(key => Object.keys(positionContrastHistory).indexOf(key));
-                        console.log("Skipping trial due to small delta:", isConverged(),  targetPositions.length === 0);
+                        console.log("Skipping trial due to small delta:", isConverged(),  targetPositions.length==0);
                
                         if (isConverged() && targetPositions.length === 0) {
                            
