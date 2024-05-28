@@ -146,15 +146,15 @@ var shiftDirections = {
 
 // boolean to help keep track of small contrast values
 var smallTargets = {
-    "center": false,
-    "topLeft": false,
-    "topCenter": false,
-    "topRight": false,
-    "middleLeft": false,
-    "middleRight": false,
-    "bottomLeft": false,
-    "bottomCenter": false,
-    "bottomRight": false
+    "center": 0,
+    "topLeft": 0,
+    "topCenter": 0,
+    "topRight": 0,
+    "middleLeft": 0,
+    "middleRight": 0,
+    "bottomLeft": 0,
+    "bottomCenter": 0,
+    "bottomRight": 0
 }
 
 //keeps track of the last key
@@ -459,7 +459,7 @@ function updateGaborContrast(canSee) {
     contrast /= 255; // Normalize the contrast for storing
 
     if (contrast < (1 / 255)) {
-        smallTargets[curr_key] = true;
+        smallTargets[curr_key] = 1;
         console.log("Skipping trial due to contrast:", contrast);
         return;
     }
@@ -774,7 +774,7 @@ async function newTrial() {
     await showNoise();
     setTimeout(async function () {
 
-        if ((frequency >= maxFrequency && isConverged(positionShifts)) || (Object.values(smallTargets).every(c => c==true) || 
+        if ((frequency >= maxFrequency && isConverged(positionShifts)) || (Object.values(smallTargets).every(c => c==1) || 
             (frequency >= maxFrequency && positionShifts[prev_key] == convergenceThreshold && !$("#9-position").prop("checked")))) {
 
             console.log(convergenceThreshold, frequency >= maxFrequency, isConverged(positionShifts));
@@ -803,7 +803,7 @@ async function newTrial() {
                         targetPositions = Array.from({ length: 9 }, (_, index) => index);
                     }
 
-                    if (Object.values(smallTargets).some(c => c ==true)) {
+                    if (Object.values(smallTargets).some(c => c == 1)) {
                         targetPositions = Object.keys(positionContrastHistory).filter(key => positionContrastHistory[key] > (1 / 255));
                         targetPositions = targetPositions.map(key => Object.keys(positionContrastHistory).indexOf(key));
                         console.log("Skipping trial due to small delta:", Object.keys(positionContrastHistory)[counter], targetPositions);
