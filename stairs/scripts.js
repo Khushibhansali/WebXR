@@ -107,7 +107,7 @@ var positionDelta = {
 
 //dictionary to monitor yes per position 
 var positionYes = {
-    "center": 1,
+    "center": 0,
     "topLeft": 1,
     "topCenter": 1,
     "topRight": 1,
@@ -785,7 +785,6 @@ async function newTrial() {
         if ((frequency >= maxFrequency && isConverged()) ||
             (frequency >= maxFrequency && positionShifts[prev_key] == convergenceThreshold && !$("#9-position").prop("checked"))) {
 
-            console.log(convergenceThreshold, frequency >= maxFrequency, isConverged());
             for (var i = 0; i < 9; i++) {
                 key = Object.keys(positionShifts)[i];
                 pushResponses(positionContrastHistory[key], key);
