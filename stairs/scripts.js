@@ -664,9 +664,9 @@ function createGabor(side, freq, orientation, stdev, phase, contrast) {
 
 //checks if all positions have shifted the threshold number of times
 function isConverged() {
-    for (var i = 0; i < 9; i++) {
+    for (var i = 1; i < 9; i++) {
         key = Object.keys(positionShifts)[i];
-        console.log(positionShifts[key] < convergenceThreshold , smallTargets[key] == 0);
+        console.log("lklkl", positionShifts[key] < convergenceThreshold, smallTargets[key] == 0);
         if (positionShifts[key] < convergenceThreshold || smallTargets[key] == 0){
             return false;
         }
