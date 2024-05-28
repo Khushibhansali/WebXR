@@ -54,15 +54,15 @@ var targetPositions = [1, 2, 3, 4, 5, 6, 7, 8];
 
 //dictionary to monitor contrast history per position
 var positionContrastHistory = {
-    "center": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0078125],
-    "topLeft": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0078125],
-    "topCenter": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0078125],
-    "topRight": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0078125],
-    "middleLeft": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0078125],
-    "middleRight": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0078125],
-    "bottomLeft": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0078125],
-    "bottomCenter": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0078125],
-    "bottomRight": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0078125]
+    "center": [1],
+    "topLeft": [1],
+    "topCenter": [1],
+    "topRight": [1],
+    "middleLeft": [1],
+    "middleRight": [1],
+    "bottomLeft": [1],
+    "bottomCenter": [1],
+    "bottomRight": [1]
 };
 
 //dictionary to monitor contrast high in 1st element and low in 2nd element per position
@@ -814,9 +814,19 @@ async function newTrial() {
                         targetPositions = Object.keys(positionContrastHistory).filter(key => positionContrastHistory[key] > (1 / 255));
                         targetPositions = targetPositions.map(key => Object.keys(positionContrastHistory).indexOf(key));
                         console.log("Skipping trial due to small delta:", Object.keys(positionContrastHistory)[counter], targetPositions);
-                    }
 
-                    shuffle(targetPositions);
+                        if ((frequency >= maxFrequency && isConverged()) ||
+                            (frequency >= maxFrequency && positionShifts[prev_key] == convergenceThreshold && !$("#9-position").prop("checked"))) {
+
+                            for (var i = 0; i < 9; i++) {
+                                curr_key = Object.keys(positionShifts)[i];
+                                pushResponses(positionContrastHistory[curr_key], curr_key);
+                            }
+
+                            endExperiment();
+                        }else{
+                            shuffle(targetPositions);
+                        }
                 }
 
                 prev_key = Object.keys(positionContrastHistory)[counter];
