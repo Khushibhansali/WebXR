@@ -815,8 +815,7 @@ async function newTrial() {
                         targetPositions = targetPositions.map(key => Object.keys(positionContrastHistory).indexOf(key));
                         console.log("Skipping trial due to small delta:", Object.keys(positionContrastHistory)[counter], targetPositions);
 
-                        if ((frequency >= maxFrequency && isConverged()) ||
-                            (frequency >= maxFrequency && positionShifts[prev_key] == convergenceThreshold && !$("#9-position").prop("checked"))) {
+                       if (frequency >= maxFrequency && isConverged() && targetPositions == []){
 
                             for (var i = 0; i < 9; i++) {
                                 curr_key = Object.keys(positionShifts)[i];
