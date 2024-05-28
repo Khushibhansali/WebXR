@@ -665,8 +665,10 @@ function createGabor(side, freq, orientation, stdev, phase, contrast) {
 //checks if all positions have shifted the threshold number of times
 function isConverged() {
     for (var i = 1; i < 9; i++) {
-        key = Object.keys(positionShifts)[i];
+        key = Object.keys(positionShifts)[i
+        console.log("in the converge curr key ", key, positionShifts[key], smallTargets[key]);
         if (positionShifts[key] < convergenceThreshold || smallTargets[key] == 0){
+            console.log("no more conveging");
             return false;
         }
     }
@@ -809,7 +811,7 @@ async function newTrial() {
                     } else if (Object.values(smallTargets).some(c => c == 1)) {
                         targetPositions = Object.keys(positionContrastHistory).filter(key => positionContrastHistory[key] > (1 / 255));
                         targetPositions = targetPositions.map(key => Object.keys(positionContrastHistory).indexOf(key));
-                           console.log("kjkj", isConverged());
+                        console.log("kjkj", isConverged(),  targetPositions.length==0);
                         if (isConverged() && targetPositions.length==0) {
                            console.log("in the end");
                             for (var i = 0; i < 9; i++) {
