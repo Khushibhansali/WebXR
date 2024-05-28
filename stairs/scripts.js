@@ -666,6 +666,7 @@ function createGabor(side, freq, orientation, stdev, phase, contrast) {
 function isConverged() {
     for (var i = 0; i < 9; i++) {
         key = Object.keys(positionShifts)[i];
+        console.log(positionShifts[key] < convergenceThreshold , smallTargets[key] == 0);
         if (positionShifts[key] < convergenceThreshold || smallTargets[key] == 0){
             return false;
         }
