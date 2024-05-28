@@ -808,16 +808,16 @@ async function newTrial() {
                     } else if (Object.values(smallTargets).some(c => c == 1)) {
                         targetPositions = Object.keys(positionContrastHistory).filter(key => positionContrastHistory[key] > (1 / 255));
                         targetPositions = targetPositions.map(key => Object.keys(positionContrastHistory).indexOf(key));
-                        console.log("Skipping trial due to small delta:", isConverged(),  targetPositions.length==0);
                
                         if (isConverged() && targetPositions.length==0) {
-                           
+                           console.log("in the end");
                             for (var i = 0; i < 9; i++) {
                                 key = Object.keys(positionShifts)[i];
+                                console.log("ppp", positionContrastHistory[key], key);
                                 pushResponses(positionContrastHistory[key], key);
                             }
                 
-                            console.log("end");
+                            console.log("end", frequency, maxFrequency,frequency >= maxFrequency);
                             if (frequency >= maxFrequency){
                                 endExperiment();
                             }
