@@ -774,7 +774,7 @@ async function newTrial() {
     await showNoise();
     setTimeout(async function () {
 
-        if ((frequency >= maxFrequency && isConverged(positionShifts)) || (Object.values(smallTargets).every(c => c == (true)) || 
+        if ((frequency >= maxFrequency && isConverged(positionShifts)) || (Object.values(smallTargets).every(c => c==true) || 
             (frequency >= maxFrequency && positionShifts[prev_key] == convergenceThreshold && !$("#9-position").prop("checked")))) {
 
             console.log(convergenceThreshold, frequency >= maxFrequency, isConverged(positionShifts));
@@ -803,7 +803,7 @@ async function newTrial() {
                         targetPositions = Array.from({ length: 9 }, (_, index) => index);
                     }
 
-                    if (Object.values(smallTargets).some(c => c == true)) {
+                    if (Object.values(smallTargets).some(c => c ==true)) {
                         targetPositions = Object.keys(positionContrastHistory).filter(key => positionContrastHistory[key] > (1 / 255));
                         targetPositions = targetPositions.map(key => Object.keys(positionContrastHistory).indexOf(key));
                         console.log("Skipping trial due to small delta:", Object.keys(positionContrastHistory)[counter], targetPositions);
