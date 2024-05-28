@@ -663,8 +663,15 @@ function createGabor(side, freq, orientation, stdev, phase, contrast) {
 }
 
 //checks if all positions have shifted the threshold number of times
-function isConverged(obj) {
-    return Object.values(obj).every(value => value >= convergenceThreshold);
+function isConverged() {
+    for (var i = 0; i < 9; i++) {
+        key = Object.keys(positionShifts)[i];
+        if (positionShifts[key] < convergenceThreshold || smallTargets[key] == 0){
+            return false;
+        }
+    }
+    return true;
+   // return Object.values(obj).every(value => value >= convergenceThreshold);
 }
 
 
@@ -741,7 +748,7 @@ function pushResponses(objArray, key_to_push) {
         Imax.center = [1];
     }
 
-    if (isConverged(positionShifts)) {
+    if (isConverged()) {
         //console.log("experiment finished!");
         if (frequency < maxFrequency) {
             frequency += stepFrequency;
@@ -774,10 +781,10 @@ async function newTrial() {
     await showNoise();
     setTimeout(async function () {
 
-        if ((frequency >= maxFrequency && isConverged(positionShifts)) || (Object.values(smallTargets).every(c => c==1) || 
-            (frequency >= maxFrequency && positionShifts[prev_key] == convergenceThreshold && !$("#9-position").prop("checked")))) {
+        if ((frequency >= maxFrequency && isConverged()) ||
+            (frequency >= maxFrequency && positionShifts[prev_key] == convergenceThreshold && !$("#9-position").prop("checked"))) {
 
-            console.log(convergenceThreshold, frequency >= maxFrequency, isConverged(positionShifts));
+            console.log(convergenceThreshold, frequency >= maxFrequency, isConverged());
             for (var i = 0; i < 9; i++) {
                 key = Object.keys(positionShifts)[i];
                 pushResponses(positionContrastHistory[key], key);
