@@ -877,7 +877,7 @@ async function newTrial() {
             }, 250);
 
         }
-
+        }
     }, 1000);
 }
 
