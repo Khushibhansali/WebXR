@@ -774,7 +774,7 @@ async function newTrial() {
     await showNoise();
     setTimeout(async function () {
 
-        if ((frequency >= maxFrequency && isConverged(positionShifts)) || (Object.values(smallTargets).every(c => c == (True)) || 
+        if ((frequency >= maxFrequency && isConverged(positionShifts)) || (Object.values(smallTargets).every(c => c == (true)) || 
             (frequency >= maxFrequency && positionShifts[prev_key] == convergenceThreshold && !$("#9-position").prop("checked")))) {
 
             console.log(convergenceThreshold, frequency >= maxFrequency, isConverged(positionShifts));
