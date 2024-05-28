@@ -781,15 +781,16 @@ async function newTrial() {
     await showNoise();
     setTimeout(async function () {
 
-        if ((frequency >= maxFrequency && isConverged()) ||
-            (frequency >= maxFrequency && positionShifts[prev_key] == convergenceThreshold && !$("#9-position").prop("checked"))) {
+        if (isConverged() || (positionShifts.center >= convergenceThreshold && !$("#9-position").prop("checked"))) {
 
             for (var i = 0; i < 9; i++) {
                 key = Object.keys(positionShifts)[i];
                 pushResponses(positionContrastHistory[key], key);
             }
 
-            endExperiment();
+            if (frequency >= maxFrequency){
+                endExperiment();
+            }
         } else {
             // NEW TRIAL INFO
 
@@ -808,7 +809,7 @@ async function newTrial() {
                     } else if (Object.values(smallTargets).some(c => c == 1)) {
                         targetPositions = Object.keys(positionContrastHistory).filter(key => positionContrastHistory[key] > (1 / 255));
                         targetPositions = targetPositions.map(key => Object.keys(positionContrastHistory).indexOf(key));
-               
+                           console.log("kjkj", isConverged());
                         if (isConverged() && targetPositions.length==0) {
                            console.log("in the end");
                             for (var i = 0; i < 9; i++) {
