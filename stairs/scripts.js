@@ -54,15 +54,15 @@ var targetPositions = [1, 2, 3, 4, 5, 6, 7, 8];
 
 //dictionary to monitor contrast history per position
 var positionContrastHistory = {
-    "center": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.009765625],
-    "topLeft": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.009765625],
-    "topCenter": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.009765625],
-    "topRight": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.009765625],
-    "middleLeft": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.009765625],
-    "middleRight": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.009765625],
-    "bottomLeft": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.009765625],
-    "bottomCenter": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.009765625],
-    "bottomRight": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.009765625]
+    "center": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.002765625],
+    "topLeft": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.002765625],
+    "topCenter": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.002765625],
+    "topRight": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.002765625],
+    "middleLeft": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.002765625],
+    "middleRight": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.002765625],
+    "bottomLeft": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.002765625],
+    "bottomCenter": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.002765625],
+    "bottomRight": [1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.002765625]
 };
 
 //dictionary to monitor contrast high in 1st element and low in 2nd element per position
@@ -811,7 +811,7 @@ async function newTrial() {
                         targetPositions = targetPositions.map(key => Object.keys(positionContrastHistory).indexOf(key));
                         console.log("Skipping trial due to small delta:", Object.keys(positionContrastHistory)[counter], targetPositions);
                         
-                        if ((frequency >= maxFrequency && isConverged()) || targetPositions == []) {
+                        if ((frequency >= maxFrequency && isConverged()) || arr.length === 0) {
                             for (var i = 0; i < 9; i++) {
                                 key = Object.keys(positionShifts)[i];
                                 pushResponses(positionContrastHistory[key], key);
