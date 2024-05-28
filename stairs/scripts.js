@@ -806,27 +806,28 @@ async function newTrial() {
                         targetPositions = Object.keys(positionShifts).filter(key => positionShifts[key] < convergenceThreshold);
                         targetPositions = targetPositions.map(key => Object.keys(positionShifts).indexOf(key));
 
-                    } else {
-                        targetPositions = Array.from({ length: 9 }, (_, index) => index);
-                    }
-
-                    if (Object.values(smallTargets).some(c => c == 1)) {
+                    } else if (Object.values(smallTargets).some(c => c == 1)) {
                         targetPositions = Object.keys(positionContrastHistory).filter(key => positionContrastHistory[key] > (1 / 255));
                         targetPositions = targetPositions.map(key => Object.keys(positionContrastHistory).indexOf(key));
                         console.log("Skipping trial due to small delta:", Object.keys(positionContrastHistory)[counter], targetPositions);
-
-                       if (frequency >= maxFrequency && isConverged() && targetPositions == []){
-
+                        
+                        if (frequency >= maxFrequency && isConverged()) {
                             for (var i = 0; i < 9; i++) {
-                                curr_key = Object.keys(positionShifts)[i];
-                                pushResponses(positionContrastHistory[curr_key], curr_key);
+                                key = Object.keys(positionShifts)[i];
+                                pushResponses(positionContrastHistory[key], key);
                             }
-
+                
                             endExperiment();
                         }else{
                             shuffle(targetPositions);
                         }
+                    } else {
+                        targetPositions = Array.from({ length: 9 }, (_, index) => index);
+                    }
                 }
+
+                
+                
 
                 prev_key = Object.keys(positionContrastHistory)[counter];
                 angle = angleOrientation[counter];
@@ -835,8 +836,7 @@ async function newTrial() {
                 counter = targetPositions.pop();
                 key = Object.keys(positionContrastHistory)[counter];
                 objArray = positionContrastHistory[key];
-                trials_remaining = (8 - targetPositions.length);
-
+              
                 const bold = "font-weight: bold";
                 console.log("%c %s #yes: %d #shifts: %d contrast:", bold, key, positionYes[key], positionShifts[key], positionContrastHistory[key]);
 
@@ -876,7 +876,7 @@ async function newTrial() {
             }, 250);
 
         }
-        }
+
     }, 1000);
 }
 
