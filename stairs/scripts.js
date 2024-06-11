@@ -52,7 +52,8 @@ var convergenceThreshold = 7;
 // add 0 back if you want to have first target as trials
 var targetPositions = [1, 2, 3, 4, 5, 6, 7, 8];
 
-//dictionary to monitor contrast history per position
+//dictionary to monitor contrast history per position 
+// , 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.002765625
 var positionContrastHistory = {
     "center": [1],
     "topLeft": [1],
@@ -107,7 +108,7 @@ var positionDelta = {
 
 //dictionary to monitor yes per position 
 var positionYes = {
-    "center": 0,
+    "center": 1,
     "topLeft": 1,
     "topCenter": 1,
     "topRight": 1,
@@ -124,9 +125,9 @@ var positionShifts = {
     "topLeft": 0,
     "topCenter": 0,
     "topRight": 0,
-    "middleLeft": 0,
+    "middleLeft":0,
     "middleRight": 0,
-    "bottomLeft": 0,
+    "bottomLeft":0,
     "bottomCenter": 0,
     "bottomRight": 0
 };
@@ -180,28 +181,32 @@ AFRAME.registerComponent('button-listener', {
             curr_key = Object.keys(positionContrastHistory)[counter];
             if (shiftDirections[curr_key].length >= 2 && shiftDirections[curr_key].slice(-2).every(direction => direction === "up")) {
                 if (!($("#9-position").prop("checked"))) {
-                    pushResponses(positionContrastHistory[prev_key], prev_key);
 
-                    if (frequency > maxFrequency) {
+                    pushResponses();
+                    console.log("end3", frequency, maxFrequency);
+                    if (frequency >= (maxFrequency + stepFrequency)){
                         endExperiment();
                     } else {
 
-                        frequency += maxFrequency;
+                        frequency += stepFrequency;
 
                         //reset variables
                         positionShifts.center = 0;
                         positionContrastHistory.center = [1];
                         positionYes.center = 0;
                         Imax.center = 255;
+                        Imin.center = 0;
+                        shiftDirections.center = [];
                     }
                 } else {
-                    currContrast = updateGaborContrast(true);
-                    positionYes[curr_key] = 0;
+                    // currContrast = updateGaborContrast(true);
+                    // positionYes[curr_key] = 0;
                     newTrial();
                 }
             } else {
                 currContrast = updateGaborContrast(false);
                 positionYes[curr_key] = 0;
+
                 newTrial();
             }
         });
@@ -232,8 +237,14 @@ function toggleFullScreen() {
 }
 
 $(document).ready(function () {
+    /* Adjusti ng the frequency, max frequency, std, and step frequency based on depth of 150m*/
+    frequency =Math.ceil(parseFloat($("#frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
+    maxFrequency = Math.ceil(parseFloat($("#max-frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
+    std = parseFloat($("#size-std").val()) * stddevFactor;
+    stepFrequency = Math.ceil(parseFloat($("#step-frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
+    convergenceThreshold = parseFloat($("#convergenceThreshold").val());
+    console.log(frequency, maxFrequency, stepFrequency);
     addAlignmentSquares();
-
 
     $("#fullscreen").click(function (event) {
         toggleFullScreen();
@@ -243,16 +254,8 @@ $(document).ready(function () {
 
     $("#main").append('<a-plane id="opaque-vr" material="color:' + backgroundColor + '; transparent:true;opacity:1" width="200" height="200" visible="false" position="0 0 -49.1"></a-plane>');
 
-    /* Adjusting the frequency, max frequency, std, and step frequency based on depth of 150m*/
-    frequency = Math.ceil(parseFloat($("#frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
-    std = parseFloat($("#size-std").val()) * stddevFactor;
-    maxFrequency = Math.ceil(parseFloat($("#max-frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
-    stepFrequency = Math.ceil(parseFloat($("#step-frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
-    convergenceThreshold = parseFloat($("#convergenceThreshold").val());
-
     //this gabor changes the size of the gabor in the menu
     var gabor = createGabor(targetResolution, frequency, 0, std, 0.5, 1);
-
     $("#gabor").append(gabor);
     rr = gabor.toDataURL("image/png").split(';base64,')[1];
     $("#main").append('<a-plane id="gabor-vr" material="src:url(data:image/png;base64,' + rr + ');transparent:true;opacity:1" width="10" height="10" position="0 0 -150"></a-plane>');
@@ -271,10 +274,10 @@ $(document).ready(function () {
         e.stopPropagation();
     });
 
-    /* Registers keyboard input a->97 and up arrow (increase contrast) and b->98 and down arrow(decrease contrast) */
+    /* Keyboard input a->97 and up arrow (increase contrast) and b->98 and down arrow(decrease contrast) */
     $(document).on('keydown keyup keypress', function (event) {
         let keycode = (event.keyCode ? event.keyCode : event.which);
-
+        
         if (acceptingResponses) {
             curr_key = Object.keys(positionContrastHistory)[counter];
             if (keycode == 97 || keycode == 65 || keycode == 38) {
@@ -284,25 +287,28 @@ $(document).ready(function () {
                     currContrast = updateGaborContrast(true);
                     positionYes[curr_key] = 0;
                 }
+        
                 newTrial();
             } else if (keycode == 98 || keycode == 66 || keycode == 40) {
 
                 if (shiftDirections[curr_key].length >= 2 && shiftDirections[curr_key].slice(-2).every(direction => direction === "up")) {
 
                     if (!($("#9-position").prop("checked"))) {
-                        pushResponses(positionContrastHistory[prev_key], prev_key);
+                        pushResponses();
 
-                        if (frequency > maxFrequency) {
+                        if (frequency >= (maxFrequency + stepFrequency)) {
                             endExperiment();
                         } else {
 
-                            frequency += maxFrequency;
+                            frequency += stepFrequency;
 
                             //reset variables
                             positionShifts.center = 0;
                             positionContrastHistory.center = [1];
                             positionYes.center = 0;
                             Imax.center = 255;
+                            Imin.center = 0;
+                            shiftDirections.center = [];
                         }
                     } else {
                         currContrast = updateGaborContrast(true);
@@ -312,6 +318,7 @@ $(document).ready(function () {
                 } else {
                     currContrast = updateGaborContrast(false);
                     positionYes[curr_key] = 0;
+   
                     newTrial();
                 }
             }
@@ -325,7 +332,7 @@ $(document).ready(function () {
     /* If target st dev changed, we update the angle of the target based on current location 
     and type of experiment (9 loc, random loc, or static loc). We also
     convert new st dev value to units we want and redraw target gabor */
-    $("#size-std").change(function () {
+    $("#size-std").keyup(function () {
         if ($("#9-position").prop("checked")) {
             angle = angleOrientation[counter];
         }
@@ -339,7 +346,7 @@ $(document).ready(function () {
     /* If frequency changed, we update the angle of the target based on current location 
     and type of experiment (9 loc, random loc, or static loc). We also
     convert new frequency value to units we want, recalculate total trials, and redraw target gabor */
-    $("#frequency").change(function () {
+    $("#frequency").keyup(function () {
         if ($("#9-position").prop("checked")) {
             angle = angleOrientation[counter];
         }
@@ -356,21 +363,21 @@ $(document).ready(function () {
     });
 
     /* If step freq changed we recalculate total trials and convert new step frequency to units we want */
-    $("#step-frequency").change(function () {
+    $("#step-frequency").keyup(function () {
         stepFrequency = Math.ceil(parseFloat($("#step-frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
     });
 
     /* If distance between targets is updated, recalculate target positions */
-    $("#distance").change(function () {
+    $("#distance").keyup(function () {
         updateLocation();
     });
 
     /* If convergence Threshold between targets is updated, recalculate */
-    $("#convergenceThreshold").change(function () {
+    $("#convergenceThreshold").keyup(function () {
         convergenceThreshold = parseFloat($("#convergenceThreshold").val());
     });
 
-    $("#background-noise").change(function () {
+    $("#background-noise").keyup(function () {
         showNoise();
         if ($("#background-noise").prop("checked")) {
             document.getElementById("noise-vr").setAttribute("material", "opacity", "1");
@@ -419,13 +426,12 @@ function updateGaborContrast(canSee) {
     const objArray = positionContrastHistory[curr_key];
     let contrast = objArray[objArray.length - 1] * 255; // Scale up to work on original scale
     const last = shiftDirections[curr_key].length - 1;
-
+    
     if (last - 1 >= 0 && shiftDirections[curr_key][last] != shiftDirections[curr_key][last - 1]) {
         positionShifts[curr_key] += 1;
     }
 
     if (positionDelta[curr_key] <= 1) {
-        console.log("Skipping trial due to small delta:", positionDelta[curr_key]);
         return;
     }
 
@@ -460,7 +466,7 @@ function updateGaborContrast(canSee) {
 
     if (contrast < (1 / 255)) {
         smallTargets[curr_key] = 1;
-        console.log("Skipping trial due to contrast:", contrast);
+        console.log(curr_key, "Skipping trial due to contrast:", contrast);
         return;
     }
     positionContrastHistory[curr_key].push(contrast);
@@ -664,16 +670,16 @@ function createGabor(side, freq, orientation, stdev, phase, contrast) {
 
 //checks if all positions have shifted the threshold number of times
 function isConverged() {
-    for (var i = 1; i < 9; i++) {
-        key = Object.keys(positionShifts)[i];
-        console.log("in the converge curr key ", key, positionShifts[key], smallTargets[key]);
-        if (positionShifts[key] < convergenceThreshold || smallTargets[key] == 0){
-            console.log("no more conveging");
-            return false;
-        }
-    }
-    return true;
-   // return Object.values(obj).every(value => value >= convergenceThreshold);
+
+    // for (let i = 0; i < 9; i++) {
+    //     key = Object.keys(positionShifts)[i];
+    //     if (positionShifts[key] < convergenceThreshold && smallTargets[key] == 0){
+    //         console.log(i, "didnt work out", smallTargets);
+    //         return false;
+    //     }
+    // }
+    // return true;
+   return Object.values(positionShifts).every(value => value >= convergenceThreshold);
 }
 
 
@@ -690,8 +696,7 @@ function shuffle(array) {
         currentIndex--;
 
         // And swap it with the current element
-        [array[currentIndex], array[randomIndex]] = [
-            array[randomIndex], array[currentIndex]];
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
     }
 
     return array;
@@ -727,43 +732,47 @@ function makeGabor(objArray) {
     document.getElementById("gabor-vr").setAttribute("visible", "false");
 }
 
-function pushResponses(objArray, key_to_push) {
+function pushResponses() {
 
-    if (!responses.some(item => item.targetName === key_to_push && item.frequency === frequency)) {
+    if ($("#9-position").prop("checked")){
+        for (let i = 0; i < 9; i++) {
+            key = Object.keys(positionShifts)[i];
+            responses.push({
+                    targetName: key,
+                    contrast: positionContrastHistory[key],
+                    frequency: Math.round(frequency * frequencyFactor * 100) / 100,
+                    maxFrequency: maxFrequency * frequencyFactor,
+                    size_std: std / 10,
+                    position: position,
+                    trialTime: stimulusOff - stimulusOn,
+            });
+        }
+    }else{
         responses.push({
-            targetName: key_to_push,
-            contrast: objArray.slice(0, -1),
+            targetName: key,
+            contrast: positionContrastHistory.center,
             frequency: Math.round(frequency * frequencyFactor * 100) / 100,
             maxFrequency: maxFrequency * frequencyFactor,
             size_std: std / 10,
             position: position,
             trialTime: stimulusOff - stimulusOn,
-        });
+        }); 
     }
+
+    frequency = Math.round((parseFloat(frequency) + parseFloat(stepFrequency)) * 100) / 100;
 
     //reset variables
-    if (!$("#9-position").prop("checked") && frequency < maxFrequency && positionShifts.center == convergenceThreshold) {
-        frequency += stepFrequency;
-        positionShifts.center = 0;
-        positionContrastHistory.center = [1];
-        positionYes.center = 0;
-        Imax.center = [1];
-    }
-
-    if (isConverged()) {
-        //console.log("experiment finished!");
-        if (frequency < maxFrequency) {
-            frequency += stepFrequency;
-            for (var i = 0; i < 9; i++) {
-                key = Object.keys(positionShifts)[i];
-                positionShifts[key] = 0;
-                positionContrastHistory[key] = [1];
-                positionYes[key] = 0;
-                Imax[key] = [1]
-            }
-        }
+    for (let i = 0; i < 9; i++) {
+        key = Object.keys(positionShifts)[i];
+        positionShifts[key] = 0;
+        positionContrastHistory[key] = [1];
+        positionYes[key] = 0;
+        shiftDirections[key] = [];
+        Imax[key] = 255;
+        Imin[key] = 0;
     }
 }
+
 
 async function newTrial() {
     stimulusOff = Date.now();
@@ -783,104 +792,83 @@ async function newTrial() {
     await showNoise();
     setTimeout(async function () {
 
-        if (isConverged() || (positionShifts.center >= convergenceThreshold && !$("#9-position").prop("checked"))) {
-
-            for (var i = 0; i < 9; i++) {
-                key = Object.keys(positionShifts)[i];
-                pushResponses(positionContrastHistory[key], key);
-            }
-
-            if (frequency >= maxFrequency){
+        if ((!$("#9-position").prop("checked") && positionShifts.center >= convergenceThreshold) || isConverged()) {
+            pushResponses();
+            
+            console.log("end 2");
+            if (frequency >= (maxFrequency + stepFrequency)){
+                console.log(frequency, (maxFrequency + stepFrequency));
                 endExperiment();
             }
-        } else {
-            // NEW TRIAL INFO
+        }
+        
+        acceptingResponses = true;
+        if ($("#9-position").prop("checked")) {
 
-            acceptingResponses = true;
-            if ($("#9-position").prop("checked")) {
+            //if all nine locations are complete then restart counter
+            if (targetPositions.length == 0) {
 
-                //if all nine locations are complete then restart counter
-                if (targetPositions.length == 0) {
-
-                    // Filter out the converged positions from TARGET and add the remaining positions to targetPositions
-                    if (Object.values(positionShifts).some(shift => shift >= convergenceThreshold)) {
-
-                        targetPositions = Object.keys(positionShifts).filter(key => positionShifts[key] < convergenceThreshold);
-                        targetPositions = targetPositions.map(key => Object.keys(positionShifts).indexOf(key));
-
-                    } else if (Object.values(smallTargets).some(c => c == 1)) {
-                        targetPositions = Object.keys(positionContrastHistory).filter(key => positionContrastHistory[key] > (1 / 255));
-                        targetPositions = targetPositions.map(key => Object.keys(positionContrastHistory).indexOf(key));
-                        console.log("kjkj", isConverged(),  targetPositions.length==0);
-                        if (isConverged() && targetPositions.length==0) {
-                           console.log("in the end");
-                            for (var i = 0; i < 9; i++) {
-                                key = Object.keys(positionShifts)[i];
-                                console.log("ppp", positionContrastHistory[key], key);
-                                pushResponses(positionContrastHistory[key], key);
-                            }
-                
-                            console.log("end", frequency, maxFrequency,frequency >= maxFrequency);
-                            if (frequency >= maxFrequency){
-                                endExperiment();
-                            }
-                        }else{
-                            shuffle(targetPositions);
-                        }
-                    } else {
-                        targetPositions = Array.from({ length: 9 }, (_, index) => index);
-                    }
+                // Filter out the converged positions from TARGET and add the remaining positions to targetPositions
+                if (Object.values(positionShifts).some(shift => shift >= convergenceThreshold)) {
+                    targetPositions = Object.keys(positionShifts).filter(key => positionShifts[key] < convergenceThreshold);
+                    targetPositions = targetPositions.map(key => Object.keys(positionShifts).indexOf(key));
+                } else {
+                    targetPositions = Array.from({ length: 9 }, (_, index) => index);
                 }
+                
+                if (Object.values(smallTargets).some(c => c == 1)) {
+                    targetPositions = Object.keys(smallTargets).filter(key => smallTargets[key] == 0);
+                    targetPositions = targetPositions.map(key => Object.keys(smallTargets).indexOf(key));
 
-         
+                } 
+            }
+
+            if (targetPositions.length==0 && isConverged()){
+                pushResponses();
+                
+                if (frequency >= (maxFrequency + stepFrequency)){
+                    endExperiment();
+                }
+            }else{
+                shuffle(targetPositions);
                 prev_key = Object.keys(positionContrastHistory)[counter];
                 angle = angleOrientation[counter];
                 position = [loc[counter][0], loc[counter][1], -150];
-
                 counter = targetPositions.pop();
                 key = Object.keys(positionContrastHistory)[counter];
-                objArray = positionContrastHistory[key];
-              
+                
                 const bold = "font-weight: bold";
                 console.log("%c %s #yes: %d #shifts: %d contrast:", bold, key, positionYes[key], positionShifts[key], positionContrastHistory[key]);
-
-                makeGabor(objArray);
-
+                makeGabor(positionContrastHistory[key]);
             }
-            else {
-                if (positionShifts.center == convergenceThreshold) {
-                    key = Object.keys(positionContrastHistory)[0];
-                    pushResponses(positionContrastHistory.center, key);
-                }
+                
+        }
+        else {
+            const bold = "font-weight: bold";
+            console.log("%c%s #yes: %d #shifts: %d contrast:", bold, "center", positionYes.center, positionShifts.center, positionContrastHistory.center);
 
-                const bold = "font-weight: bold";
-                console.log("%c%s #yes: %d #shifts: %d contrast:", bold, "center", positionYes.center, positionShifts.center, positionContrastHistory.center);
-
-                makeGabor(positionContrastHistory.center);
-            }
-
-            //Make target flash
-            setTimeout(() => {
-
-                if ($("#background-noise").prop("checked"))
-                    document.getElementById("noise-vr").setAttribute("material", "opacity", "1");
-                else
-                    document.getElementById("noise-vr").setAttribute("material", "opacity", "0");
-                document.getElementById("gabor-vr").setAttribute("material", "opacity", "1");
-                $("#opaque-vr").attr("visible", "false");
-                document.getElementById("sky").setAttribute("color", backgroundColor);
-                stimulusOn = Date.now();
-
-                //Set the opacity to 0 after 250 milliseconds
-                setTimeout(() => {
-                    document.getElementById("gabor-vr").setAttribute("material", "opacity", "0");
-                    Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "0"); });
-                }, 1000);
-
-            }, 250);
-
+            makeGabor(positionContrastHistory.center);
         }
 
+        //Make target flash
+        setTimeout(() => {
+
+            if ($("#background-noise").prop("checked"))
+                document.getElementById("noise-vr").setAttribute("material", "opacity", "1");
+            else
+                document.getElementById("noise-vr").setAttribute("material", "opacity", "0");
+            document.getElementById("gabor-vr").setAttribute("material", "opacity", "1");
+            $("#opaque-vr").attr("visible", "false");
+            document.getElementById("sky").setAttribute("color", backgroundColor);
+            stimulusOn = Date.now();
+
+            //Set the opacity to 0 after 250 milliseconds
+            setTimeout(() => {
+                document.getElementById("gabor-vr").setAttribute("material", "opacity", "0");
+                Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "0"); });
+            }, 1000);
+
+        }, 250);
     }, 1000);
 }
 
