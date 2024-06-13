@@ -257,19 +257,22 @@ $(document).ready(function () {
     // stepFrequency = Math.ceil(parseFloat($("#step-frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
     
     convergenceThreshold = parseFloat($("#convergenceThreshold").val());
-    frequency = parseFloat($("#frequency").val())/26;
-    std = parseFloat($("#size-std").val())*10;
+    // frequency = parseFloat($("#frequency").val())/26;
+    // std = parseFloat($("#size-std").val())*10;
+    // maxFrequency = parseFloat($("#max-frequency").val())/26;
+    // stepFrequency = parseFloat($("#step-frequency").val())/26;
+    frequency = (parseFloat($("#frequency").val()) / 26) / 3;
+    std = parseFloat($("#size-std").val())* 10 * 3;
     maxFrequency = parseFloat($("#max-frequency").val())/26;
-    stepFrequency = parseFloat($("#step-frequency").val())/26;
-    
+    stepFrequency= parseFloat($("#step-frequency").val())/26;
+
     addAlignmentSquares();
 
     $("#fullscreen").click(function (event) {
         toggleFullScreen();
     });
 
-    $("#main").append('<a-plane id="noise-vr" material="transparent:true;opacity:0" width="200" height="200" position="0 0 -150.1"></a-plane>');
-
+    // $("#main").append('<a-plane id="noise-vr" material="transparent:true;opacity:0" width="200" height="200" position="0 0 -150.1"></a-plane>');
     $("#main").append('<a-plane id="opaque-vr" material="color:' + backgroundColor + '; transparent:true;opacity:1" width="200" height="200" visible="false" position="0 0 -49.1"></a-plane>');
 
     //this gabor changes the size of the gabor in the menu
