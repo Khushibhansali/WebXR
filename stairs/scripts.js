@@ -371,7 +371,8 @@ $(document).ready(function () {
         if ($("#9-position").prop("checked")) {
             angle = angleOrientation[counter];
         }
-        frequency = Math.ceil(parseFloat($("#frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
+        // frequency = Math.ceil(parseFloat($("#frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
+        frequency=  parseFloat($("#frequency").val())/26;
         var gabor = createGabor(targetResolution, frequency, angle, std, 0.5, 1);
         $("#gabor").html(gabor);
         rr = gabor.toDataURL("image/png").split(';base64,')[1];
@@ -380,12 +381,14 @@ $(document).ready(function () {
 
     /* If max freq changed we recalculate total trials and convert new max frequency to units we want */
     $("#max-frequency").change(function () {
-        maxFrequency = Math.ceil(parseFloat($("#max-frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
+        // maxFrequency = Math.ceil(parseFloat($("#max-frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
+        max_freq= parseFloat($("#max-frequency").val())/26;
     });
 
     /* If step freq changed we recalculate total trials and convert new step frequency to units we want */
     $("#step-frequency").keyup(function () {
-        stepFrequency = Math.ceil(parseFloat($("#step-frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
+        // stepFrequency = Math.ceil(parseFloat($("#step-frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
+        step_freq= parseFloat($("#step-frequency").val())/26;
     });
 
     /* If distance between targets is updated, recalculate target positions */
