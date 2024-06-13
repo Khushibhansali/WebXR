@@ -161,15 +161,15 @@ var smallTargets = {
 
 // boolean to help keep track of small contrast values
 var contrastHistory = {
-        "center": [1],
-        "topLeft": [1],
-        "topCenter": [1],
-        "topRight": [1],
-        "middleLeft": [1],
-        "middleRight": [1],
-        "bottomLeft": [1],
-        "bottomCenter": [1],
-        "bottomRight": [1]
+        "center": [1, 1],
+        "topLeft": [1, 1],
+        "topCenter": [1, 1],
+        "topRight": [1, 1],
+        "middleLeft": [1, 1],
+        "middleRight": [1, 1],
+        "bottomLeft": [1, 1],
+        "bottomCenter": [1, 1],
+        "bottomRight": [1, 1]
 };
 
 //keeps track of the last key
@@ -195,9 +195,8 @@ AFRAME.registerComponent('button-listener', {
             curr_key = Object.keys(positionContrastHistory)[counter];
             if (shiftDirections[curr_key].length >= 2 && shiftDirections[curr_key].slice(-2).every(direction => direction === "up")) {
                 if (!($("#9-position").prop("checked"))) {
-
                     pushResponses();
-                    console.log("end3", frequency, maxFrequency);
+
                     if (frequency >= (maxFrequency + stepFrequency)){
                         endExperiment();
                     } else {
@@ -207,21 +206,20 @@ AFRAME.registerComponent('button-listener', {
                         //reset variables
                         positionShifts.center = 0;
                         positionContrastHistory.center = [1];
-                        contrastHistory.center [1];
+                        contrastHistory.center [1, 1];
                         positionYes.center = 0;
                         Imax.center = 255;
                         Imin.center = 0;
                         shiftDirections.center = [];
                     }
                 } else {
-                    // currContrast = updateGaborContrast(true);
-                    // positionYes[curr_key] = 0;
+                    currContrast = updateGaborContrast(true);
+                    positionYes[curr_key] = 0;
                     newTrial();
                 }
             } else {
                 currContrast = updateGaborContrast(false);
                 positionYes[curr_key] = 0;
-
                 newTrial();
             }
         });
@@ -258,7 +256,7 @@ $(document).ready(function () {
     std = parseFloat($("#size-std").val()) * stddevFactor;
     stepFrequency = Math.ceil(parseFloat($("#step-frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
     convergenceThreshold = parseFloat($("#convergenceThreshold").val());
-    console.log(frequency, maxFrequency, stepFrequency);
+
     addAlignmentSquares();
 
     $("#fullscreen").click(function (event) {
@@ -320,14 +318,13 @@ $(document).ready(function () {
                             //reset variables
                             positionShifts.center = 0;
                             positionContrastHistory.center = [1];
-                            contrastHistory.center = [1];
+                            contrastHistory.center = [1, 1];
                             positionYes.center = 0;
                             Imax.center = 255;
                             Imin.center = 0;
                             shiftDirections.center = [];
                         }
                     } else {
-                        contrastHistory.push(positionContrastHistory[key][positionContrastHistory[key].length-1]);
                         currContrast = updateGaborContrast(true);
                         positionYes[curr_key] = 0;
                         newTrial();
@@ -335,7 +332,6 @@ $(document).ready(function () {
                 } else {
                     currContrast = updateGaborContrast(false);
                     positionYes[curr_key] = 0;
-   
                     newTrial();
                 }
             }
@@ -483,11 +479,15 @@ function updateGaborContrast(canSee) {
 
     if (contrast < (1 / 255)) {
         smallTargets[curr_key] = 1;
-        console.log(curr_key, "Skipping trial due to contrast:", contrast);
         return;
     }
     positionContrastHistory[curr_key].push(contrast);
     contrastHistory[curr_key].push(contrast);
+
+    //add 2 contrast values to show that staircase effect unless 98 or 'b' is pressed twice
+    if (!(shiftDirections[curr_key][last] == "up" && shiftDirections[curr_key][last - 1] == "up")) {
+        contrastHistory[curr_key].push(contrast);
+    }
 }
 
 async function showNoise() {
@@ -767,7 +767,7 @@ function pushResponses() {
         }
     }else{
         responses.push({
-            targetName: key,
+            targetName: "center",
             contrast: contrastHistory.center,
             frequency: Math.round(frequency * frequencyFactor * 100) / 100,
             maxFrequency: maxFrequency * frequencyFactor,
@@ -784,7 +784,7 @@ function pushResponses() {
         key = Object.keys(positionShifts)[i];
         positionShifts[key] = 0;
         positionContrastHistory[key] = [1];
-        contrastHistory[key] = [1];
+        contrastHistory[key] = [1, 1];
         positionYes[key] = 0;
         shiftDirections[key] = [];
         Imax[key] = 255;
@@ -813,7 +813,6 @@ async function newTrial() {
         if ((!$("#9-position").prop("checked") && positionShifts.center >= convergenceThreshold) || isConverged()) {
                 pushResponses();
                 
-                console.log("end 2", frequency, maxFrequency, stepFrequency);
                 if (frequency >= (maxFrequency + stepFrequency)){
                     experimentQuit = true;
                     endExperiment();
