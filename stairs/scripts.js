@@ -382,13 +382,13 @@ $(document).ready(function () {
     /* If max freq changed we recalculate total trials and convert new max frequency to units we want */
     $("#max-frequency").change(function () {
         // maxFrequency = Math.ceil(parseFloat($("#max-frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
-        max_freq= parseFloat($("#max-frequency").val())/26;
+        maxFrequency= parseFloat($("#max-frequency").val())/26;
     });
 
     /* If step freq changed we recalculate total trials and convert new step frequency to units we want */
     $("#step-frequency").keyup(function () {
         // stepFrequency = Math.ceil(parseFloat($("#step-frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
-        step_freq= parseFloat($("#step-frequency").val())/26;
+        stepFrequency= parseFloat($("#step-frequency").val())/26;
     });
 
     /* If distance between targets is updated, recalculate target positions */
