@@ -3,39 +3,176 @@ var ctx;
 var canvas;
 var running = false;
 
-var gyroPos = new THREE.Vector3();
-var sensorPos = new THREE.Quaternion();
-
 var thumbstickMoving = false;
 
-var sceneNumber = 0;
-var prev_time = 0;
-
 var responses = [];
-var contrast = 1, position = [0, 0, -150];
+var position = [0, 0, -150];
 var stimulusOn = -1, stimulusOff = -1;
 
-var positionVariation = 70;
-
+var randomPositionFactor = 70;
 var acceptingResponses = false;
-
+var exitExperiment = false;
 var doubleQuit = false;
-
 var backgroundColor = "#7F7F7F";
 
-var loc = [[0,0], [-1, 1], [0, 1],[1, 1], [-1, 0], [1, 0], [-1,-1], [0, -1], [1, -1]];
-var angle_pos = [0, -45, 90, 45, 0, 0, 45, 90, -45];
-var counter = 0;
-var angle = 0;
-var Imax = 132;
-var Imin = 122;
-var frequency = 0;
-var location_adjusted = false;
-var frequency = 0.02;
-var std = 12;
-var max_freq = 0.03;
-var step_freq= 0.05;
+//variable that ensures the targets are distanced correctly in case shift value is changed 
+var locationAdjusted = false;
 
+//the default locations we want the target to go
+var defaultLoc = [[0, 0], [-1, 1], [0, 1], [1, 1], [-1, 0], [1, 0], [-1, -1], [0, -1], [1, -1]];
+
+// a variable to store new locations in case the shift or distance between targets is changed
+var loc = [[0, 0], [-1, 1], [0, 1], [1, 1], [-1, 0], [1, 0], [-1, -1], [0, -1], [1, -1]];
+
+//the default orientations we want the target to rotate to
+var angleOrientation = [0, -45, 90, 45, 0, 0, 45, 90, -45];
+
+//increments the angle orientation and the loc variable
+var counter = 0;
+
+//current angle from angleOrientation
+var angle = 0;
+
+//default values for all the fields from the menu on the website 
+var frequency = 0.5;
+var std = 12;
+var maxFrequency = 0.5;
+var stepFrequency = 0.5;
+
+//factors that help scale and calculate trials
+var frequencyFactor = 26;
+var cyclesPerDegreeFactor = 1 / 78;
+var stddevFactor = 30;
+
+//The size of the target in pixels
+var targetResolution = 300;
+
+// Number of shifts in contrast 
+var convergenceThreshold = 7;
+
+// add 0 back if you want to have first target as trials
+var targetPositions = [1, 2, 3, 4, 5, 6, 7, 8];
+
+//dictionary to monitor contrast history per position 
+// , 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.002765625
+var positionContrastHistory = {
+    "center": [1],
+    "topLeft": [1],
+    "topCenter": [1],
+    "topRight": [1],
+    "middleLeft": [1],
+    "middleRight": [1],
+    "bottomLeft": [1],
+    "bottomCenter": [1],
+    "bottomRight": [1]
+};
+
+var contrastHistory = {
+    "center": [1],
+    "topLeft": [1],
+    "topCenter": [1],
+    "topRight": [1],
+    "middleLeft": [1],
+    "middleRight": [1],
+    "bottomLeft": [1],
+    "bottomCenter": [1],
+    "bottomRight": [1]
+};
+
+//dictionary to monitor contrast high in 1st element and low in 2nd element per position
+var Imax = {
+    "center": 255,
+    "topLeft": 255,
+    "topCenter": 255,
+    "topRight": 255,
+    "middleLeft": 255,
+    "middleRight": 255,
+    "bottomLeft": 255,
+    "bottomCenter": 255,
+    "bottomRight": 255
+}
+
+
+//dictionary to monitor contrast high in 1st element and low in 2nd element per position
+var Imin = {
+    "center": 0,
+    "topLeft": 0,
+    "topCenter": 0,
+    "topRight": 0,
+    "middleLeft": 0,
+    "middleRight": 0,
+    "bottomLeft": 0,
+    "bottomCenter": 0,
+    "bottomRight": 0
+}
+
+//dictionary to monitor yes per position 
+var positionDelta = {
+    "center": 128,
+    "topLeft": 128,
+    "topCenter": 128,
+    "topRight": 128,
+    "middleLeft": 128,
+    "middleRight": 128,
+    "bottomLeft": 128,
+    "bottomCenter": 128,
+    "bottomRight": 128
+};
+
+//dictionary to monitor yes per position 
+var positionYes = {
+    "center": 1,
+    "topLeft": 1,
+    "topCenter": 1,
+    "topRight": 1,
+    "middleLeft": 1,
+    "middleRight": 1,
+    "bottomLeft": 1,
+    "bottomCenter": 1,
+    "bottomRight": 1
+};
+
+//dictionary to monitor shifts per position
+var positionShifts = {
+    "center": 0,
+    "topLeft": 0,
+    "topCenter": 0,
+    "topRight": 0,
+    "middleLeft":0,
+    "middleRight": 0,
+    "bottomLeft":0,
+    "bottomCenter": 0,
+    "bottomRight": 0
+};
+
+// boolean to help keep track of shifts
+var shiftDirections = {
+    "center": [],
+    "topLeft": [],
+    "topCenter": [],
+    "topRight": [],
+    "middleLeft": [],
+    "middleRight": [],
+    "bottomLeft": [],
+    "bottomCenter": [],
+    "bottomRight": []
+}
+
+// boolean to help keep track of small contrast values
+var smallTargets = {
+    "center": 0,
+    "topLeft": 0,
+    "topCenter": 0,
+    "topRight": 0,
+    "middleLeft": 0,
+    "middleRight": 0,
+    "bottomLeft": 0,
+    "bottomCenter": 0,
+    "bottomRight": 0
+}
+
+//keeps track of the last key
+var prev_key = Object.keys(positionContrastHistory)[counter];
 
 /*Registers controller button pressed */
 AFRAME.registerComponent('button-listener', {
@@ -43,18 +180,51 @@ AFRAME.registerComponent('button-listener', {
         var el = this.el;
 
         el.addEventListener('abuttondown', function (evt) {
-            if (acceptingResponses){
-                newTrial(true);
+            curr_key = Object.keys(positionContrastHistory)[counter];
+            positionYes[curr_key] += 1;
+
+            if (positionYes[curr_key] == 2) {
+                currContrast = updateGaborContrast(true);
+                positionYes[curr_key] = 0;
             }
+            newTrial();
         });
 
         el.addEventListener('bbuttondown', function (evt) {
-            var gabor = createGabor(300, frequency, 0, std, 0.5, 1);
-            $("#gabor").html(gabor);
-            rr = gabor.toDataURL("image/png").split(';base64,')[1];
-            document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
+            curr_key = Object.keys(positionContrastHistory)[counter];
+            if (shiftDirections[curr_key].length >= 2 && shiftDirections[curr_key].slice(-2).every(direction => direction === "up")) {
+                if (!($("#9-position").prop("checked"))) {
+
+                    pushResponses();
+                    console.log("end3", frequency, maxFrequency);
+                    if (frequency >= (maxFrequency + stepFrequency)){
+                        endExperiment();
+                    } else {
+
+                        frequency += stepFrequency;
+
+                        //reset variables
+                        positionShifts.center = 0;
+                        positionContrastHistory.center = [1];
+                        positionYes.center = 0;
+                        Imax.center = 255;
+                        Imin.center = 0;
+                        shiftDirections.center = [];
+                        positionContrast.center = [1];
+                    }
+                } else {
+                    // currContrast = updateGaborContrast(true);
+                    // positionYes[curr_key] = 0;
+                    newTrial();
+                }
+            } else {
+                currContrast = updateGaborContrast(false);
+                positionYes[curr_key] = 0;
+
+                newTrial();
+            }
         });
-      
+
         el.addEventListener('gripdown', function (evt) {
             if (doubleQuit == false) {
                 doubleQuit = true;
@@ -70,31 +240,6 @@ AFRAME.registerComponent('button-listener', {
     }
 });
 
-
-/* Controller thumbstick actions */
-AFRAME.registerComponent('thumbstick-logging', {
-    init: function () {
-        this.el.addEventListener('thumbstickmoved', this.logThumbstick);
-        this.el.addEventListener('thumbsticktouchstart', function () {
-            thumbstickMoving = true;
-        });
-        this.el.addEventListener('thumbsticktouchend', function () {
-            thumbstickMoving = false;
-        });
-    },
-    logThumbstick: function (evt) {
-        if (acceptingResponses){
-            if (evt.detail.y > 0.95 || evt.detail.x > 0.95) {
-                updateGabor(-1, 1);
-            }
-            if (evt.detail.y < -0.95 || evt.detail.x < -0.95) { 
-                updateGabor(1, -1);
-            } 
-        }
-    }
-});
-
-
 function toggleFullScreen() {
     if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen();
@@ -106,25 +251,25 @@ function toggleFullScreen() {
 }
 
 $(document).ready(function () {
+    /* Adjusti ng the frequency, max frequency, std, and step frequency based on depth of 150m*/
+    frequency =Math.ceil(parseFloat($("#frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
+    maxFrequency = Math.ceil(parseFloat($("#max-frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
+    std = parseFloat($("#size-std").val()) * stddevFactor;
+    stepFrequency = Math.ceil(parseFloat($("#step-frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
+    convergenceThreshold = parseFloat($("#convergenceThreshold").val());
+    console.log(frequency, maxFrequency, stepFrequency);
     addAlignmentSquares();
-
 
     $("#fullscreen").click(function (event) {
         toggleFullScreen();
     });
 
-    $("#main").append('<a-plane id="noise-vr" material="transparent:true;opacity:0" width="150" height="150" position="0 0 -150.1"></a-plane>');
+    $("#main").append('<a-plane id="noise-vr" material="transparent:true;opacity:0" width="200" height="200" position="0 0 -150.1"></a-plane>');
 
-    $("#main").append('<a-plane id="opaque-vr" material="color:' + backgroundColor + '; transparent:true;opacity:1" width="150" height="150" visible="false" position="0 0 -49.1"></a-plane>');
+    $("#main").append('<a-plane id="opaque-vr" material="color:' + backgroundColor + '; transparent:true;opacity:1" width="200" height="200" visible="false" position="0 0 -49.1"></a-plane>');
 
-    /* Adjusting the frequency, max frequency, std, and step frequency based on depth of 150m*/
-    frequency = (parseFloat($("#frequency").val()) / 26) / 3;
-    std = parseFloat($("#size-std").val())* 10 * 3;
-    max_freq = parseFloat($("#max-frequency").val())/26;
-    step_freq= parseFloat($("#step-frequency").val())/26;
-
-    var gabor = createGabor(300, frequency, 0, std, 0.5, 1);
-
+    //this gabor changes the size of the gabor in the menu
+    var gabor = createGabor(targetResolution, frequency, 0, std, 0.5, 1);
     $("#gabor").append(gabor);
     rr = gabor.toDataURL("image/png").split(';base64,')[1];
     $("#main").append('<a-plane id="gabor-vr" material="src:url(data:image/png;base64,' + rr + ');transparent:true;opacity:1" width="10" height="10" position="0 0 -150"></a-plane>');
@@ -135,37 +280,62 @@ $(document).ready(function () {
     $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="7 0 -150"></a-plane>');
     $("#main").append('<a-plane class="cue" material="color:black; transparent:true" width="3" height=".5" position="-7 0 -150"></a-plane>');
 
-    //trials
-    num_trials = Math.floor((max_freq-frequency)/step_freq) + 1;
-    trial_num();
 
     stimulusOn = Date.now();
     acceptingResponses = true;
-    
+
     $("#info").on("keypress", function (e) {
         e.stopPropagation();
     });
 
-    /* Registers keyboard input a->97 (increase contrast) and b->98 (decrease contrast) */
+    /* Keyboard input a->97 and up arrow (increase contrast) and b->98 and down arrow(decrease contrast) */
     $(document).on('keydown keyup keypress', function (event) {
         let keycode = (event.keyCode ? event.keyCode : event.which);
-
+        
         if (acceptingResponses) {
-            if (keycode == 97) {
-                newTrial(true);
-            } else if (keycode == 98) {
-                Imax = 132;
-                Imin = 122;
-                var gabor = createGabor(300, frequency, angle, std, 0.5, 1);
-                $("#gabor").html(gabor);
-                rr = gabor.toDataURL("image/png").split(';base64,')[1];
-                document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
-            }
-            else if (keycode==38){
-                updateGabor(1, -1);
-            }
-            else if (keycode==40){
-                updateGabor(-1, 1);
+            curr_key = Object.keys(positionContrastHistory)[counter];
+            if (keycode == 97 || keycode == 65 || keycode == 38) {
+                positionYes[curr_key] += 1;
+
+                if (positionYes[curr_key] == 2) {
+                    currContrast = updateGaborContrast(true);
+                    positionYes[curr_key] = 0;
+                }
+        
+                newTrial();
+            } else if (keycode == 98 || keycode == 66 || keycode == 40) {
+
+                if (shiftDirections[curr_key].length >= 2 && shiftDirections[curr_key].slice(-2).every(direction => direction === "up")) {
+
+                    if (!($("#9-position").prop("checked"))) {
+                        pushResponses();
+
+                        if (frequency >= (maxFrequency + stepFrequency)) {
+                            endExperiment();
+                        } else {
+
+                            frequency += stepFrequency;
+
+                            //reset variables
+                            positionShifts.center = 0;
+                            positionContrastHistory.center = [1];
+                            positionYes.center = 0;
+                            Imax.center = 255;
+                            Imin.center = 0;
+                            shiftDirections.center = [];
+                            contrastHistory.center = [1];
+                        }
+                    } else {
+                        currContrast = updateGaborContrast(true);
+                        positionYes[curr_key] = 0;
+                        newTrial();
+                    }
+                } else {
+                    currContrast = updateGaborContrast(false);
+                    positionYes[curr_key] = 0;
+   
+                    newTrial();
+                }
             }
         }
     });
@@ -178,126 +348,149 @@ $(document).ready(function () {
     and type of experiment (9 loc, random loc, or static loc). We also
     convert new st dev value to units we want and redraw target gabor */
     $("#size-std").keyup(function () {
-        if ($("#fixed-position").prop("checked")) {
-            angle = angle_pos[counter];
+        if ($("#9-position").prop("checked")) {
+            angle = angleOrientation[counter];
         }
-        std = parseFloat($("#size-std"))* 10;
-        var gabor = createGabor(300, frequency, angle,std, 0.5, 1);
+        std = parseFloat($("#size-std").val()) * stddevFactor;
+        var gabor = createGabor(targetResolution, frequency, angle, std, 0.5, 1);
         $("#gabor").html(gabor);
         rr = gabor.toDataURL("image/png").split(';base64,')[1];
         document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
     });
 
-/* If frequency changed, we update the angle of the target based on current location 
+    /* If frequency changed, we update the angle of the target based on current location 
     and type of experiment (9 loc, random loc, or static loc). We also
     convert new frequency value to units we want, recalculate total trials, and redraw target gabor */
-    $("#frequency").change(function () {
-        if ($("#fixed-position").prop("checked")) {
-            angle = angle_pos[counter];
+    $("#frequency").keyup(function () {
+        if ($("#9-position").prop("checked")) {
+            angle = angleOrientation[counter];
         }
-        frequency=  parseFloat($("#frequency").val())/26;
-        trial_num();
-        var gabor = createGabor(300, frequency, angle, std, 0.5, 1);
+        frequency = Math.ceil(parseFloat($("#frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
+        var gabor = createGabor(targetResolution, frequency, angle, std, 0.5, 1);
         $("#gabor").html(gabor);
         rr = gabor.toDataURL("image/png").split(';base64,')[1];
         document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
     });
 
-/* If max freq changed we recalculate total trials and convert new max frequency to units we want  */
+    /* If max freq changed we recalculate total trials and convert new max frequency to units we want */
     $("#max-frequency").change(function () {
-        max_freq= parseFloat($("#max-frequency").val())/26;
-        trial_num();
+        maxFrequency = Math.ceil(parseFloat($("#max-frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
     });
 
-/* If step freq changed we recalculate total trials and convert new step frequency to units we want  */
-    $("#step-frequency").change(function () {
-        step_freq= parseFloat($("#step-frequency").val())/26;
-        trial_num();
+    /* If step freq changed we recalculate total trials and convert new step frequency to units we want */
+    $("#step-frequency").keyup(function () {
+        stepFrequency = Math.ceil(parseFloat($("#step-frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
     });
 
     /* If distance between targets is updated, recalculate target positions */
-    $("#distance").change(function () {
-        distance = parseFloat($("#distance").val());
-        index = 0;
-        while (index < loc.length){
-
-            loc[index][0] *= distance;
-            loc[index][1] = loc[index][1] * distance;
-            index+=1;    
-     }
-     location_adjusted = true;
-
+    $("#distance").keyup(function () {
+        updateLocation();
     });
 
-     $("#fixed-position").change(function () {
-        trial_num();
-     });
-    
-     $("#random-location").change(function () {
-        trial_num();
-     });   
+    /* If convergence Threshold between targets is updated, recalculate */
+    $("#convergenceThreshold").keyup(function () {
+        convergenceThreshold = parseFloat($("#convergenceThreshold").val());
+    });
 
-    $("#background-noise").change(function () {
+    $("#background-noise").keyup(function () {
         showNoise();
-        if ($("#background-noise").prop("checked"))
+        if ($("#background-noise").prop("checked")) {
             document.getElementById("noise-vr").setAttribute("material", "opacity", "1");
+        }
         else
             document.getElementById("noise-vr").setAttribute("material", "opacity", "0");
     });
 
     $("#gaussian-sigma").keyup(function () {
         showNoise();
-        if ($("#background-noise").prop("checked"))
+        if ($("#background-noise").prop("checked")) {
             document.getElementById("noise-vr").setAttribute("material", "opacity", "1");
-        else
+        } else {
             document.getElementById("noise-vr").setAttribute("material", "opacity", "0");
+        }
     });
 
     $("#noise-params").keyup(function () {
         showNoise();
-        if ($("#background-noise").prop("checked"))
+        if ($("#background-noise").prop("checked")) {
             document.getElementById("noise-vr").setAttribute("material", "opacity", "1");
-        else
+        }
+        else {
             document.getElementById("noise-vr").setAttribute("material", "opacity", "0");
-    });
-
-    $('#background-color').minicolors({
-        control: 'hue',
-        change: function () {
-            backgroundColor = $('#background-color').val();
-            $("#sky").attr("color", backgroundColor);
-            $("#opaque-vr").attr("color", backgroundColor);
-        },
+        }
     });
 
 });
 
 /* Calculates new location based on distance */
-function updateLocation(){
+function updateLocation() {
     distance = parseFloat($("#distance").val());
     index = 0;
-    while (index < loc.length){
+    loc = structuredClone(defaultLoc);
+    while (index < loc.length) {
         loc[index][0] *= distance;
         loc[index][1] = loc[index][1] * distance;
-        index+=1;    
+        index += 1;
     }
-    location_adjusted = true;
-}
 
+    locationAdjusted = true;
+}
 /* Adjusts contrast*/
-function updateGabor(max, min){
-    Imax += max;
-    if (Imax % 2 == 0){
-        Imin+=min;
+function updateGaborContrast(canSee) {
+    const curr_key = Object.keys(positionContrastHistory)[counter];
+    const objArray = positionContrastHistory[curr_key];
+    let contrast = objArray[objArray.length - 1] * 255; // Scale up to work on original scale
+    const last = shiftDirections[curr_key].length - 1;
+    
+    if (last - 1 >= 0 && shiftDirections[curr_key][last] != shiftDirections[curr_key][last - 1]) {
+        positionShifts[curr_key] += 1;
     }
-    contrast = (Imax - Imin)/ (Imax + Imin);
-    var gabor = createGabor(300, frequency, angle, std, 0.5, contrast);
-    $("#gabor").html(gabor);
-    rr = gabor.toDataURL("image/png").split(';base64,')[1];
-    document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
+
+    if (positionDelta[curr_key] <= 1) {
+        return;
+    }
+
+    if (canSee) {
+        // Simply halve the current contrast
+        contrast /= 2;
+        shiftDirections[curr_key].push("down");
+    } else {
+        // Determine positionDelta adjustment based on shift directions
+        if (last >= 1 && shiftDirections[curr_key][last] == "down" && shiftDirections[curr_key][last - 1] == "down") {
+            positionDelta[curr_key] *= 2;
+        } else if (last >= 1 && shiftDirections[curr_key][last] == "up" && shiftDirections[curr_key][last - 1] == "down") {
+            positionDelta[curr_key] /= 4;
+        } else if (last >= 1 && shiftDirections[curr_key][last] == "up" && shiftDirections[curr_key][last - 1] == "up") {
+            positionDelta[curr_key] /= 2;
+        }
+
+        // Average of the last two contrasts if available, else halve
+        if (objArray.length > 1) {
+            contrast = (objArray[objArray.length - 1] * 255 + objArray[objArray.length - 2] * 255) / 2;
+        } else {
+            contrast /= 2; // Fallback if not enough history
+        }
+        shiftDirections[curr_key].push("up");
+    }
+
+    // Adjust Imax and Imin based on the new contrast
+    Imax[curr_key] = Imin[curr_key] + contrast;
+    Imin[curr_key] = Imax[curr_key] - contrast;
+
+    contrast /= 255; // Normalize the contrast for storing
+
+    if (contrast < (1 / 255)) {
+        smallTargets[curr_key] = 1;
+        console.log(curr_key, "Skipping trial due to contrast:", contrast);
+        return;
+    }
+    positionContrastHistory[curr_key].push(contrast);
+    contrastHistory[key].push(contrast);
+    contrastHistory[key].push(contrast);
 }
 
 async function showNoise() {
+
     if ($("#background-noise").prop("checked"))
         var noise = await createNoiseField(1000, 128, parseFloat($("#noise-sigma").val()), parseFloat($("#gaussian-sigma").val()));
 
@@ -319,13 +512,13 @@ function addAlignmentSquares(n = 10) {
             x = col * 0.05;
             y = row * 0.05;
             $("#alignment").append('<a-entity class="alignment-square" material="color: white; " geometry="primitive: plane; width: .02; height: .02; "\
-            position = "'+ x + ' ' + y + ' -1" ></a-entity>');
+ position = "'+ x + ' ' + y + ' -1" ></a-entity>');
             $("#alignment").append('<a-entity class="alignment-square" material="color: white; " geometry="primitive: plane; width: .02; height: .02; "\
-            position = "'+ -x + ' ' + y + ' -1" ></a-entity>');
+ position = "'+ -x + ' ' + y + ' -1" ></a-entity>');
             $("#alignment").append('<a-entity class="alignment-square" material="color: white; " geometry="primitive: plane; width: .02; height: .02; "\
-            position = "'+ x + ' ' + -y + ' -1" ></a-entity>');
+ position = "'+ x + ' ' + -y + ' -1" ></a-entity>');
             $("#alignment").append('<a-entity class="alignment-square" material="color: white; " geometry="primitive: plane; width: .02; height: .02; "\
-            position = "'+ -x + ' ' + -y + ' -1" ></a-entity>');
+ position = "'+ -x + ' ' + -y + ' -1" ></a-entity>');
         }
     }
 }
@@ -336,18 +529,23 @@ function createNoiseField(side, mean, stdev, gaussian) {
         noise.setAttribute("id", "noise");
         noise.width = side;
         noise.height = side;
+        var buff = new Uint8Array(noise.width * noise.height * 4);
         var ctx = noise.getContext("2d");
         ctx.createImageData(side, side);
         idata = ctx.getImageData(0, 0, side, side);
+
         for (var x = 0; x < side; x++) {
             for (var y = 0; y < side; y++) {
                 amp = (Math.random() - 0.5) * stdev;
-                idata.data[(y * side + x) * 4] = mean + amp;     // red
-                idata.data[(y * side + x) * 4 + 1] = mean + amp; // green
-                idata.data[(y * side + x) * 4 + 2] = mean + amp; // blue
-                idata.data[(y * side + x) * 4 + 3] = 255;
+                buff[(y * side + x) * 4] = mean + amp; // red
+                buff[(y * side + x) * 4 + 1] = mean + amp; // green
+                buff[(y * side + x) * 4 + 2] = mean + amp; // blue
+                buff[(y * side + x) * 4 + 3] = 255;
             }
         }
+
+        // Set pixel data using the TypedArray
+        idata.data.set(buff);
 
         if (gaussian > 0) {
             kernel = makeGaussKernel(gaussian);
@@ -395,12 +593,18 @@ function gauss_internal(pixels, kernel, ch, gray) {
     var mk = Math.floor(kernel.length / 2);
     var kl = kernel.length;
 
+    // Precalculate offsets and indices
+    var offset, off, rowOffset, colOffset, row, col;
+    var hw, row, sum;
+
     // First step process columns
-    for (var j = 0, hw = 0; j < h; j++, hw += w) {
+    for (var j = 0; j < h; j++) {
+        hw = j * w;
+        rowOffset = hw * 4;
         for (var i = 0; i < w; i++) {
-            var sum = 0;
+            sum = 0;
             for (var k = 0; k < kl; k++) {
-                var col = i + (k - mk);
+                col = i + (k - mk);
                 col = (col < 0) ? 0 : ((col >= w) ? w - 1 : col);
                 sum += data[(hw + col) * 4 + ch] * kernel[k];
             }
@@ -409,39 +613,32 @@ function gauss_internal(pixels, kernel, ch, gray) {
     }
 
     // Second step process rows
-    for (var j = 0, offset = 0; j < h; j++, offset += w) {
+    for (var j = 0; j < h; j++) {
+        offset = j * w;
         for (var i = 0; i < w; i++) {
-            var sum = 0;
+            sum = 0;
             for (k = 0; k < kl; k++) {
-                var row = j + (k - mk);
+                row = j + (k - mk);
                 row = (row < 0) ? 0 : ((row >= h) ? h - 1 : row);
                 sum += buff[(row * w + i)] * kernel[k];
             }
-            var off = (j * w + i) * 4;
+            off = (offset + i) * 4;
             (!gray) ? data[off + ch] = sum :
                 data[off] = data[off + 1] = data[off + 2] = sum;
         }
     }
 }
 
-function trial_num(){
-    if ($("#fixed-position").prop("checked")) {
-        num_trials = Math.floor((max_freq-frequency+step_freq)/step_freq) * loc.length;
-    }else if(!$("#fixed-position").prop("checked") && !$("#random-location").prop("checked")){
-        num_trials = Math.floor((max_freq-frequency+step_freq)/step_freq);
-    }
 
-}
-//change the side value, the original setting of it. dont do patch resolution modification
 function createGabor(side, freq, orientation, stdev, phase, contrast) {
     /*
-        Generates and returns a Gabor patch canvas.
-        Arguments:
-        side            --  The size of the patch in pixels.
-        frequency       --  The spatial frequency of the patch.
-        orientation     --  The orientation of the patch in degrees.
-        std         --  The standard deviation of the Gaussian envelope.
-        phase       --  The phase of the patch.
+    Generates and returns a Gabor patch canvas.
+    Arguments:
+    side -- The size of the patch in pixels.
+    frequency -- The spatial frequency of the patch.
+    orientation -- The orientation of the patch in degrees.
+    std -- The standard deviation of the Gaussian envelope.
+    phase -- The phase of the patch.
     */
     var gabor = document.createElement("canvas");
     gabor.setAttribute("id", "gabor");
@@ -452,7 +649,8 @@ function createGabor(side, freq, orientation, stdev, phase, contrast) {
     ctx.createImageData(side, side);
     idata = ctx.getImageData(0, 0, side, side);
     var amp, f, dx, dy;
-    var c = 0
+
+
     for (var x = 0; x < side; x++) {
         for (var y = 0; y < side; y++) {
             // The dx from the center
@@ -465,21 +663,15 @@ function createGabor(side, freq, orientation, stdev, phase, contrast) {
             yy = (r * Math.sin(t));
 
             amp = 0.5 + 0.5 * Math.cos(2 * Math.PI * (xx * freq + phase));
-            f = Math.exp(-0.5 * Math.pow((xx) /(stdev), 2) - 0.5 * Math.pow((yy) / (stdev), 2));
+            f = Math.exp(-0.5 * Math.pow((xx) / (stdev), 2) - 0.5 * Math.pow((yy) / (stdev), 2));
 
-            c+=1;
-            idata.data[(y * side + x) * 4] = 255 * (amp);     // red
-            idata.data[(y * side + x) * 4 + 1] = 255 * (amp); // green
-            idata.data[(y * side + x) * 4 + 2] = 255 * (amp); // blue
-            idata.data[(y * side + x) * 4 + 3] = 255 * f * contrast;
+            var intensity = 255 * amp;
+            idata.data[(y * side + x) * 4] = intensity; // red
+            idata.data[(y * side + x) * 4 + 1] = intensity; // green
+            idata.data[(y * side + x) * 4 + 2] = intensity; // blue
+            idata.data[(y * side + x) * 4 + 3] = 255 * f * contrast; // alpha
         }
     }
-
-    // enable anti-aliasing
-    //ctx.imageSmoothingEnabled = true;
-
-    //apply slight gaussian blur
-    //ctx.filter = 'blur(0.5px)';
 
     ctx.putImageData(idata, 0, 0);
     var originalGabor = document.createElement("canvas");
@@ -489,146 +681,234 @@ function createGabor(side, freq, orientation, stdev, phase, contrast) {
 
     //render at double resolution then scale down
     originalCtx.drawImage(gabor, 0, 0, side, side, 0, 0, side, side);
-    
+
     return originalGabor;
 }
 
-async function newTrial(response) {
+//checks if all positions have shifted the threshold number of times
+function isConverged() {
+
+    // for (let i = 0; i < 9; i++) {
+    //     key = Object.keys(positionShifts)[i];
+    //     if (positionShifts[key] < convergenceThreshold && smallTargets[key] == 0){
+    //         console.log(i, "didnt work out", smallTargets);
+    //         return false;
+    //     }
+    // }
+    // return true;
+   return Object.values(positionShifts).every(value => value >= convergenceThreshold);
+}
+
+
+
+//randomizes the target position 
+function shuffle(array) {
+    let currentIndex = array.length, randomIndex;
+
+    // While there remain elements to shuffle
+    while (currentIndex > 0) {
+
+        // Pick a remaining element
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+
+        // And swap it with the current element
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+
+    return array;
+}
+
+function makeGabor(objArray) {
+    //target follows the 9 fixed positions
+    angle = angleOrientation[counter];
+    position = [loc[counter][0], loc[counter][1], -150];
+    var cuePosition = [[position[0], position[1] - 7, position[2]],
+    [position[0], position[1] + 7, position[2]],
+    [position[0] - 7, position[1], position[2]],
+    [position[0] + 7, position[1], position[2]]];
+    var index = 0;
+    Array.from(document.getElementsByClassName("cue")).forEach(function (e) {
+        e.setAttribute("material", "opacity", "1");
+        e.setAttribute("position", cuePosition[index].join(" "));
+        index += 1;
+    });
+
+    document.getElementById("gabor-vr").setAttribute("material", "opacity", "1");
+    gabor = createGabor(targetResolution, frequency, angle, std, 0.5, objArray[objArray.length - 1]);
+    rr = gabor.toDataURL("image/png").split(';base64,')[1];
+
+    setTimeout(() => {
+        document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
+        document.getElementById("gabor-vr").setAttribute("visible", "true");
+        document.getElementById("gabor-vr").setAttribute("position", position.join(" "));
+        $("#gabor").html(gabor);
+    }, 750);
+
+    document.getElementById("gabor-vr").setAttribute("material", "opacity", "0");
+    document.getElementById("gabor-vr").setAttribute("visible", "false");
+}
+
+function pushResponses() {
+
+    if ($("#9-position").prop("checked")){
+        for (let i = 0; i < 9; i++) {
+            key = Object.keys(positionShifts)[i];
+            responses.push({
+                    targetName: key,
+                    contrast: positionContrastHistory[key],
+                    frequency: Math.round(frequency * frequencyFactor * 100) / 100,
+                    maxFrequency: maxFrequency * frequencyFactor,
+                    size_std: std / 10,
+                    position: position,
+                    trialTime: stimulusOff - stimulusOn,
+            });
+        }
+    }else{
+        responses.push({
+            targetName: "center",
+            contrast: positionContrastHistory.center,
+            frequency: Math.round(frequency * frequencyFactor * 100) / 100,
+            maxFrequency: maxFrequency * frequencyFactor,
+            size_std: std / 10,
+            position: position,
+            trialTime: stimulusOff - stimulusOn,
+        }); 
+    }
+
+    frequency = Math.round((parseFloat(frequency) + parseFloat(stepFrequency)) * 100) / 100;
+
+    //reset variables
+    for (let i = 0; i < 9; i++) {
+        key = Object.keys(positionShifts)[i];
+        positionShifts[key] = 0;
+        positionContrastHistory[key] = [1];
+        positionYes[key] = 0;
+        shiftDirections[key] = [];
+        Imax[key] = 255;
+        Imin[key] = 0;
+        contrastHistory[key]=[1];
+    }
+}
+
+
+async function newTrial() {
     stimulusOff = Date.now();
     acceptingResponses = false;
 
-    if(location_adjusted==false){
+    if (locationAdjusted == false) {
         updateLocation();
     }
-   
+
     $("#opaque-vr").attr("visible", "true");
-
-    // prints current trial based on experiment type
-    if ($("#fixed-position").prop("checked")){
-        document.getElementById("bottom-text").setAttribute("text", "value", "\n\n" + (responses.length) + "/" + num_trials);
-    }else{
-        document.getElementById("bottom-text").setAttribute("text", "value", "\n\n" + (responses.length+1) + "/" + num_trials);
-    }
-
-    document.getElementById("bottom-text").setAttribute("position", "0 0 -49");
-    document.getElementById("gabor-vr").setAttribute("material", "opacity", "0");
-    Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "0") });
+    document.getElementById("bottom-text").setAttribute("visible", "false");
+    document.getElementById("gabor-vr").setAttribute("material", "opacity", "1");
+    Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "1") });
     document.getElementById("sky").setAttribute("color", "rgb(0,0,0)");
     document.getElementById("noise-vr").setAttribute("material", "opacity", "0");
-    
-    //records current gabor information to the json outfile 
-    if (responses.length <= num_trials) {
-        responses.push({
-            contrast: contrast,
-            frequency: Math.round(frequency*26*100)/100,
-            max_freq: max_freq*26,
-            size_std: std/10,
-            position: position,
-            trialTime: stimulusOff - stimulusOn,
-      });
-    }
-    
+
     await showNoise();
     setTimeout(async function () {
-        if (frequency >= max_freq + step_freq) {
+
+        if ((!$("#9-position").prop("checked") && positionShifts.center >= convergenceThreshold) || isConverged()) {
+            if (!$("#9-position").prop("checked")) {
+                pushResponses();
+                }
             
-            // END EXPERIMENT!
-            document.getElementById("bottom-text").setAttribute("text", "value", "EXPERIMENT FINISHED!\n\nThanks for playing :)");
-            json = {};
-            $("#info").find(".input").each(function () {
-                if ($(this).attr("type") == "checkbox")
-                    json[$(this).attr("id")] = $(this).prop("checked");
-                else
-                    json[$(this).attr("id")] = isNaN($(this).val()) ? $(this).val() : parseFloat($(this).val())
-            });
-            json["responses"] = responses;
-
-            downloadObjectAsJson(json, json["participant-id"] + "-" + Date.now());
-        } else {
-            // NEW TRIAL INFO
-            if ($("#fixed-position").prop("checked")){
-                angle = angle_pos[counter];
+            console.log("end 2");
+            if (frequency >= (maxFrequency + stepFrequency)){
+                console.log(frequency, (maxFrequency + stepFrequency));
+                exitExperiment = true;
+                endExperiment();
             }
-            contrast = 1;
-            Imax = 132;
-            Imin = 122;
-
-            // Check if it exceeds the maximum allowed frequency
-            if (frequency > max_freq) { 
-                frequency = max_freq;
-            }  
-
-            gabor = createGabor(100, frequency, angle, std, 0.5, contrast);
-            rr = gabor.toDataURL("image/png").split(';base64,')[1];
-            document.getElementById("bottom-text").setAttribute("text", "value", " Press A to confirm, Press B to reset contrast, Press up/down to adjust contrast");
-            document.getElementById("gabor-vr").setAttribute("material", "src", "url(data:image/png;base64," + rr + ")");
-            document.getElementById("bottom-text").setAttribute("position", "0 -50 -150");
-
+        }
+        
+        if (!exitExperiment){
             acceptingResponses = true;
-            if ($("#fixed-position").prop("checked")) {
-                position = [loc[counter][0], loc[counter][1],-150];
-                counter +=1;
+            if ($("#9-position").prop("checked")) {
 
                 //if all nine locations are complete then restart counter
-                if (counter == loc.length){
-                  counter = 0;
+                if (targetPositions.length == 0) {
+
+                    // Filter out the converged positions from TARGET and add the remaining positions to targetPositions
+                    if (Object.values(positionShifts).some(shift => shift >= convergenceThreshold)) {
+                        targetPositions = Object.keys(positionShifts).filter(key => positionShifts[key] < convergenceThreshold);
+                        targetPositions = targetPositions.map(key => Object.keys(positionShifts).indexOf(key));
+                    } else {
+                        targetPositions = Array.from({ length: 9 }, (_, index) => index);
+                    }
+                    
+                    if (Object.values(smallTargets).some(c => c == 1)) {
+                        targetPositions = Object.keys(smallTargets).filter(key => smallTargets[key] == 0);
+                        targetPositions = targetPositions.map(key => Object.keys(smallTargets).indexOf(key));
+
+                    } 
                 }
-                document.getElementById("gabor-vr").setAttribute("position", position.join(" "));
-                
-                //target follows the 9 fixed positions
-                cuePosition=[[position[0], position[1]-7, position[2]], [position[0], position[1]+7, position[2]], [position[0]-7, position[1], position[2]], [position[0]+7, position[1], position[2]]];
-                var index = 0;
-                Array.from(document.getElementsByClassName("cue")).forEach(function (e) { 
-                                        e.setAttribute("material", "opacity", "1");
-                                        e.setAttribute("position", cuePosition[index].join(" "));
-                                        index+=1;
-                                        });
 
-            }   
-            if ($("#random-location").prop("checked")) {
-                position = [
-                    Math.random() * positionVariation - positionVariation / 2, 
-                    Math.random() * positionVariation - positionVariation / 2, 
-                    -150];
-                document.getElementById("gabor-vr").setAttribute("position", position.join(" "));
-                
-                /*if building the proportion correct study uncomment this
-                Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "0") });
-                */
-                
-                var index = 0;
-                cuePosition=[[position[0], position[1]-7, position[2]], [position[0], position[1]+7, position[2]], [position[0]-7, position[1], position[2]], [position[0]+7, position[1], position[2]]];
-
-                Array.from(document.getElementsByClassName("cue")).forEach(function (e) { 
-                    e.setAttribute("material", "opacity", "1");
-                    e.setAttribute("position", cuePosition[index].join(" "));
-                    index+=1;
-                });
+                if (targetPositions.length==0 && isConverged()){
+                    pushResponses();
+                    
+                    if (frequency >= (maxFrequency + stepFrequency)){
+                        endExperiment();
+                    }
+                }else{
+                    shuffle(targetPositions);
+                    prev_key = Object.keys(positionContrastHistory)[counter];
+                    angle = angleOrientation[counter];
+                    position = [loc[counter][0], loc[counter][1], -150];
+                    counter = targetPositions.pop();
+                    key = Object.keys(positionContrastHistory)[counter];
+                    
+                    const bold = "font-weight: bold";
+                    console.log("%c %s #yes: %d #shifts: %d contrast:", bold, key, positionYes[key], positionShifts[key], positionContrastHistory[key], contrastHistory[key]);
+                    makeGabor(positionContrastHistory[key]);
+                }
+                    
             }
             else {
-                Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "1") });
-            }
-            if ($("#background-noise").prop("checked"))
-                document.getElementById("noise-vr").setAttribute("material", "opacity", "1");
-            else
-                document.getElementById("noise-vr").setAttribute("material", "opacity", "0");
-            document.getElementById("gabor-vr").setAttribute("material", "opacity", "1");
-            $("#opaque-vr").attr("visible", "false");
-            document.getElementById("sky").setAttribute("color", backgroundColor);
-            stimulusOn = Date.now();
-        }
+                const bold = "font-weight: bold";
+                console.log("%c%s #yes: %d #shifts: %d contrast:", bold, "center", positionYes.center, positionShifts.center, positionContrastHistory.center);
 
+                makeGabor(positionContrastHistory.center);
+            }
+
+            //Make target flash
+            setTimeout(() => {
+
+                if ($("#background-noise").prop("checked"))
+                    document.getElementById("noise-vr").setAttribute("material", "opacity", "1");
+                else
+                    document.getElementById("noise-vr").setAttribute("material", "opacity", "0");
+                document.getElementById("gabor-vr").setAttribute("material", "opacity", "1");
+                $("#opaque-vr").attr("visible", "false");
+                document.getElementById("sky").setAttribute("color", backgroundColor);
+                stimulusOn = Date.now();
+
+                //Set the opacity to 0 after 250 milliseconds
+                setTimeout(() => {
+                    document.getElementById("gabor-vr").setAttribute("material", "opacity", "0");
+                    Array.from(document.getElementsByClassName("cue")).forEach(function (e) { e.setAttribute("material", "opacity", "0"); });
+                }, 1000);
+
+            }, 250);
+        }
     }, 1000);
 
-    //if user has seen all 9 trials then we increase frequency by step 
-    if(responses.length >= 10 && ((responses.length - 10)%9==0)){
-        frequency += step_freq;
-    }
+}
 
-    // if experiment is random location or static location, we update frequency with every trial
-    if (responses.length >= 1 && !$("#fixed-position").prop("checked") && !$("#random-position").prop("checked")){
-        frequency += step_freq;
-    } 
+
+function endExperiment() {
+    document.getElementById("bottom-text").setAttribute("text", "value", "EXPERIMENT FINISHED!\n\nThanks for playing :)");
+    json = {};
+    $("#info").find(".input").each(function () {
+        if ($(this).attr("type") == "checkbox")
+            json[$(this).attr("id")] = $(this).prop("checked");
+        else
+            json[$(this).attr("id")] = isNaN($(this).val()) ? $(this).val() : parseFloat($(this).val())
+    });
+    json["responses"] = responses;
+
+    downloadObjectAsJson(json, json["participant-id"] + "-" + Date.now());
 }
 
 function downloadObjectAsJson(exportObj, exportName) {
