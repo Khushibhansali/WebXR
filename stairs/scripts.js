@@ -197,7 +197,7 @@ AFRAME.registerComponent('button-listener', {
                 if (!($("#9-position").prop("checked"))) {
                     pushResponses();
 
-                    if (frequency >= (maxFrequency + stepFrequency)){
+                    if (frequency > (maxFrequency)){
                         endExperiment();
                     } else {
 
@@ -250,21 +250,12 @@ function toggleFullScreen() {
 }
 
 $(document).ready(function () {
-    /* Adjusti ng the frequency, max frequency, std, and step frequency based on depth of 150m*/
-    // frequency =Math.ceil(parseFloat($("#frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
-    // maxFrequency = Math.ceil(parseFloat($("#max-frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
-    // std = parseFloat($("#size-std").val()) * stddevFactor;
-    // stepFrequency = Math.ceil(parseFloat($("#step-frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
-    
-    convergenceThreshold = parseFloat($("#convergenceThreshold").val());
-    // frequency = parseFloat($("#frequency").val())/26;
-    // std = parseFloat($("#size-std").val())*10;
-    // maxFrequency = parseFloat($("#max-frequency").val())/26;
-    // stepFrequency = parseFloat($("#step-frequency").val())/26;
+    /* Adjusting the frequency, max frequency, std, and step frequency based on depth of 150m*/
     frequency = (parseFloat($("#frequency").val()) / 26) / 3;
     std = parseFloat($("#size-std").val())* 10 * 3;
     maxFrequency = parseFloat($("#max-frequency").val())/26;
     stepFrequency= parseFloat($("#step-frequency").val())/26;
+    convergenceThreshold = parseFloat($("#convergenceThreshold").val());
 
     addAlignmentSquares();
 
@@ -317,7 +308,7 @@ $(document).ready(function () {
                     if (!($("#9-position").prop("checked"))) {
                         pushResponses();
 
-                        if (frequency >= (maxFrequency + stepFrequency)) {
+                        if (frequency > (maxFrequency)) {
                             endExperiment();
                         } else {
 
@@ -371,7 +362,6 @@ $(document).ready(function () {
         if ($("#9-position").prop("checked")) {
             angle = angleOrientation[counter];
         }
-        // frequency = Math.ceil(parseFloat($("#frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
         frequency=  parseFloat($("#frequency").val())/26;
         var gabor = createGabor(targetResolution, frequency, angle, std, 0.5, 1);
         $("#gabor").html(gabor);
@@ -381,13 +371,11 @@ $(document).ready(function () {
 
     /* If max freq changed we recalculate total trials and convert new max frequency to units we want */
     $("#max-frequency").change(function () {
-        // maxFrequency = Math.ceil(parseFloat($("#max-frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
         maxFrequency= parseFloat($("#max-frequency").val())/26;
     });
 
     /* If step freq changed we recalculate total trials and convert new step frequency to units we want */
     $("#step-frequency").keyup(function () {
-        // stepFrequency = Math.ceil(parseFloat($("#step-frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
         stepFrequency= parseFloat($("#step-frequency").val())/26;
     });
 
@@ -460,7 +448,7 @@ function updateGaborContrast(canSee) {
     }
 
     if (canSee) {
-        // Simply halve the current contrast
+        // Halve the current contrast
         contrast /= 2;
         shiftDirections[curr_key].push("down");
     } else {
@@ -769,8 +757,8 @@ function pushResponses() {
             responses.push({
                     targetName: key,
                     contrast: contrastHistory[key],
-                    frequency: Math.round(frequency * frequencyFactor * 100) / 100,
-                    maxFrequency: maxFrequency * frequencyFactor,
+                    frequency: Math.round(frequency * 26 * 100) / 100,
+                    maxFrequency: maxFrequency * 26,
                     size_std: std / 10,
                     position: position,
                     trialTime: stimulusOff - stimulusOn,
@@ -780,15 +768,15 @@ function pushResponses() {
         responses.push({
             targetName: "center",
             contrast: contrastHistory.center,
-            frequency: Math.round(frequency * frequencyFactor * 100) / 100,
-            maxFrequency: maxFrequency * frequencyFactor,
+            frequency: Math.round(frequency * 26 * 100) / 100,
+            maxFrequency: maxFrequency * 26,
             size_std: std / 10,
             position: position,
             trialTime: stimulusOff - stimulusOn,
         }); 
     }
 
-    frequency = Math.round((parseFloat(frequency) + parseFloat(stepFrequency)) * 100) / 100;
+    frequency += stepFrequency;
 
     //reset variables
     for (let i = 0; i < 9; i++) {
@@ -824,7 +812,7 @@ async function newTrial() {
         if ((!$("#9-position").prop("checked") && positionShifts.center >= convergenceThreshold) || isConverged()) {
                 pushResponses();
                 
-                if (frequency >= (maxFrequency + stepFrequency)){
+                if (frequency > maxFrequency){
                     experimentQuit = true;
                     endExperiment();
                 }
@@ -854,7 +842,8 @@ async function newTrial() {
                 if (targetPositions.length==0 && isConverged()){
                     pushResponses();
                     
-                    if (frequency >= (maxFrequency + stepFrequency)){
+                    if (frequency > maxFrequency){
+                        experimentQuit = true;
                         endExperiment();
                     }
                 }else{
