@@ -251,12 +251,17 @@ function toggleFullScreen() {
 
 $(document).ready(function () {
     /* Adjusti ng the frequency, max frequency, std, and step frequency based on depth of 150m*/
-    frequency =Math.ceil(parseFloat($("#frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
-    maxFrequency = Math.ceil(parseFloat($("#max-frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
-    std = parseFloat($("#size-std").val()) * stddevFactor;
-    stepFrequency = Math.ceil(parseFloat($("#step-frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
+    // frequency =Math.ceil(parseFloat($("#frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
+    // maxFrequency = Math.ceil(parseFloat($("#max-frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
+    // std = parseFloat($("#size-std").val()) * stddevFactor;
+    // stepFrequency = Math.ceil(parseFloat($("#step-frequency").val()) * cyclesPerDegreeFactor * 100) / 100;
+    
     convergenceThreshold = parseFloat($("#convergenceThreshold").val());
-
+    frequency = parseFloat($("#frequency").val())/26;
+    std = parseFloat($("#size-std").val())*10;
+    maxFrequency = parseFloat($("#max-frequency").val())/26;
+    stepFrequency = parseFloat($("#step-frequency").val())/26;
+    
     addAlignmentSquares();
 
     $("#fullscreen").click(function (event) {
