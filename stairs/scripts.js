@@ -8,8 +8,6 @@ var thumbstickMoving = false;
 var responses = [];
 var position = [0, 0, -150];
 var stimulusOn = -1, stimulusOff = -1;
-
-var randomPositionFactor = 70;
 var acceptingResponses = false;
 var doubleQuit = false;
 var experimentQuit = false;
@@ -40,21 +38,19 @@ var maxFrequency = 0.5;
 var stepFrequency = 0.5;
 
 //factors that help scale and calculate trials
-var frequencyFactor = 26;
 var cyclesPerDegreeFactor = 1 / 78;
 var stddevFactor = 30;
 
 //The size of the target in pixels
 var targetResolution = 300;
 
-// Number of shifts in contrast 
+// Default #shifts in contrast 
 var convergenceThreshold = 7;
 
-// add 0 back if you want to have first target as trials
+//excludes 0 to begin with but later repopulates all the code
 var targetPositions = [1, 2, 3, 4, 5, 6, 7, 8];
 
 //dictionary to monitor contrast history per position 
-// , 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0234375, 0.01953125, 0.002765625
 var positionContrastHistory = {
     "center": [1],
     "topLeft": [1],
@@ -159,7 +155,7 @@ var smallTargets = {
     "bottomRight": 0
 }
 
-// boolean to help keep track of small contrast values
+// boolean to help keep track of all contrast values
 var contrastHistory = {
         "center": [1, 1],
         "topLeft": [1, 1],
@@ -251,10 +247,10 @@ function toggleFullScreen() {
 
 $(document).ready(function () {
     /* Adjusting the frequency, max frequency, std, and step frequency based on depth of 150m*/
-    frequency = (parseFloat($("#frequency").val()) / 26) / 3;
-    std = parseFloat($("#size-std").val())* 10 * 3;
-    maxFrequency = parseFloat($("#max-frequency").val())/26;
-    stepFrequency= parseFloat($("#step-frequency").val())/26;
+    frequency = parseFloat($("#frequency").val()) * cyclesPerDegreeFactor;
+    std = parseFloat($("#size-std").val()) * stddevFactor;
+    maxFrequency = parseFloat($("#max-frequency").val()) * cyclesPerDegreeFactor;
+    stepFrequency= parseFloat($("#step-frequency").val()) * cyclesPerDegreeFactor;
     convergenceThreshold = parseFloat($("#convergenceThreshold").val());
 
     addAlignmentSquares();
@@ -357,12 +353,12 @@ $(document).ready(function () {
 
     /* If frequency changed, we update the angle of the target based on current location 
     and type of experiment (9 loc, random loc, or static loc). We also
-    convert new frequency value to units we want, recalculate total trials, and redraw target gabor */
+    convert new frequency value to units we want, and redraw target gabor */
     $("#frequency").keyup(function () {
         if ($("#9-position").prop("checked")) {
             angle = angleOrientation[counter];
         }
-        frequency=  parseFloat($("#frequency").val())/26;
+        frequency=  parseFloat($("#frequency").val()) * cyclesPerDegreeFactor;
         var gabor = createGabor(targetResolution, frequency, angle, std, 0.5, 1);
         $("#gabor").html(gabor);
         rr = gabor.toDataURL("image/png").split(';base64,')[1];
@@ -371,12 +367,12 @@ $(document).ready(function () {
 
     /* If max freq changed we recalculate total trials and convert new max frequency to units we want */
     $("#max-frequency").change(function () {
-        maxFrequency= parseFloat($("#max-frequency").val())/26;
+        maxFrequency= parseFloat($("#max-frequency").val()) * cyclesPerDegreeFactor;
     });
 
     /* If step freq changed we recalculate total trials and convert new step frequency to units we want */
     $("#step-frequency").keyup(function () {
-        stepFrequency= parseFloat($("#step-frequency").val())/26;
+        stepFrequency= parseFloat($("#step-frequency").val()) * cyclesPerDegreeFactor;
     });
 
     /* If distance between targets is updated, recalculate target positions */
@@ -419,8 +415,10 @@ $(document).ready(function () {
 
 });
 
-/* Calculates new location based on distance */
 function updateLocation() {
+    /* 
+    Calculates new location based on distance
+    */
     distance = parseFloat($("#distance").val());
     index = 0;
     loc = structuredClone(defaultLoc);
@@ -432,8 +430,15 @@ function updateLocation() {
 
     locationAdjusted = true;
 }
-/* Adjusts contrast*/
+
+
 function updateGaborContrast(canSee) {
+    /*
+    Updates the contrast values based on button pressed.
+    Arguments:
+    canSee -- boolean for whether target is visible.
+    */
+
     const curr_key = Object.keys(positionContrastHistory)[counter];
     const objArray = positionContrastHistory[curr_key];
     let contrast = objArray[objArray.length - 1] * 255; // Scale up to work on original scale
@@ -448,7 +453,6 @@ function updateGaborContrast(canSee) {
     }
 
     if (canSee) {
-        // Halve the current contrast
         contrast /= 2;
         shiftDirections[curr_key].push("down");
     } else {
@@ -685,24 +689,20 @@ function createGabor(side, freq, orientation, stdev, phase, contrast) {
     return originalGabor;
 }
 
-//checks if all positions have shifted the threshold number of times
 function isConverged() {
-
-    // for (let i = 0; i < 9; i++) {
-    //     key = Object.keys(positionShifts)[i];
-    //     if (positionShifts[key] < convergenceThreshold && smallTargets[key] == 0){
-    //         console.log(i, "didnt work out", smallTargets);
-    //         return false;
-    //     }
-    // }
-    // return true;
+    /*
+    Ensures all positions have shifted the threshold number of times
+    */
    return Object.values(positionShifts).every(value => value >= convergenceThreshold);
 }
 
-
-
-//randomizes the target position 
 function shuffle(array) {
+    /*
+    Randomizes the target position 
+    Arguments:
+    array -- The list of target positions.
+    */
+
     let currentIndex = array.length, randomIndex;
 
     // While there remain elements to shuffle
@@ -720,6 +720,12 @@ function shuffle(array) {
 }
 
 function makeGabor(objArray) {
+    /*
+    Draws next trial gabor
+    Arguments:
+    objArray -- The list of contrast history for specific target position.
+    */
+    
     //target follows the 9 fixed positions
     angle = angleOrientation[counter];
     position = [loc[counter][0], loc[counter][1], -150];
@@ -750,6 +756,10 @@ function makeGabor(objArray) {
 }
 
 function pushResponses() {
+    /*
+    Records contrast history for all targets at specific frequency
+    then increments frequency by step and resets other values.
+    */
 
     if ($("#9-position").prop("checked")){
         for (let i = 0; i < 9; i++) {
@@ -757,9 +767,9 @@ function pushResponses() {
             responses.push({
                     targetName: key,
                     contrast: contrastHistory[key],
-                    frequency: Math.round(frequency * 26 * 100) / 100,
-                    maxFrequency: maxFrequency * 26,
-                    size_std: std / 10,
+                    frequency: Math.round(frequency / cyclesPerDegreeFactor * 100) / 100,
+                    maxFrequency: maxFrequency / cyclesPerDegreeFactor,
+                    size_std: std / stddevFactor,
                     position: position,
                     trialTime: stimulusOff - stimulusOn,
             });
@@ -768,9 +778,9 @@ function pushResponses() {
         responses.push({
             targetName: "center",
             contrast: contrastHistory.center,
-            frequency: Math.round(frequency * 26 * 100) / 100,
-            maxFrequency: maxFrequency * 26,
-            size_std: std / 10,
+            frequency: Math.round(frequency / cyclesPerDegreeFactor * 100) / 100,
+            maxFrequency: maxFrequency / cyclesPerDegreeFactor,
+            size_std: std / stddevFactor,
             position: position,
             trialTime: stimulusOff - stimulusOn,
         }); 
@@ -791,8 +801,12 @@ function pushResponses() {
     }
 }
 
-
 async function newTrial() {
+    /*
+    Initiates next trial by recording previous contrast history, reinitializing target positions if 
+    all locations are visited, checks if experiment is complete.
+    */
+
     stimulusOff = Date.now();
     acceptingResponses = false;
 
@@ -855,7 +869,7 @@ async function newTrial() {
                     key = Object.keys(positionContrastHistory)[counter];
                     
                     const bold = "font-weight: bold";
-                    console.log("%c %s #yes: %d #shifts: %d contrast:", bold, key, positionYes[key], positionShifts[key], positionContrastHistory[key], contrastHistory[key]);
+                    console.log("%c %s #yes: %d #shifts: %d contrast:", bold, key, positionYes[key], positionShifts[key], positionContrastHistory[key]);
                     makeGabor(positionContrastHistory[key]);
                 }
                     
@@ -892,6 +906,10 @@ async function newTrial() {
 
 
 function endExperiment() {
+    /*
+    Saves participant information and ends the experiement
+    */
+
     document.getElementById("bottom-text").setAttribute("text", "value", "EXPERIMENT FINISHED!\n\nThanks for playing :)");
     json = {};
     $("#info").find(".input").each(function () {
@@ -906,6 +924,9 @@ function endExperiment() {
 }
 
 function downloadObjectAsJson(exportObj, exportName) {
+    /*
+    Exports participant results into json file
+    */
     var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
     var downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
