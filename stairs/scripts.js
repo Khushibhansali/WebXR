@@ -13,13 +13,13 @@ var doubleQuit = false;
 var experimentQuit = false;
 var backgroundColor = "#7F7F7F";
 
-//variable that ensures the targets are distanced correctly in case shift value is changed 
+//Ensures the targets are distanced correctly in case shift value is changed 
 var locationAdjusted = false;
 
 //the default locations we want the target to go
 var defaultLoc = [[0, 0], [-1, 1], [0, 1], [1, 1], [-1, 0], [1, 0], [-1, -1], [0, -1], [1, -1]];
 
-// a variable to store new locations in case the shift or distance between targets is changed
+// Stores new locations in case the shift or distance between targets is changed
 var loc = [[0, 0], [-1, 1], [0, 1], [1, 1], [-1, 0], [1, 0], [-1, -1], [0, -1], [1, -1]];
 
 //the default orientations we want the target to rotate to
