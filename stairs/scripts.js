@@ -16,41 +16,41 @@ var backgroundColor = "#7F7F7F";
 //Ensures the targets are distanced correctly in case shift value is changed 
 var locationAdjusted = false;
 
-//the default locations we want the target to go
+//Default locations we want the target to go
 var defaultLoc = [[0, 0], [-1, 1], [0, 1], [1, 1], [-1, 0], [1, 0], [-1, -1], [0, -1], [1, -1]];
 
-// Stores new locations in case the shift or distance between targets is changed
+//Stores new locations in case the shift or distance between targets is changed
 var loc = [[0, 0], [-1, 1], [0, 1], [1, 1], [-1, 0], [1, 0], [-1, -1], [0, -1], [1, -1]];
 
-//the default orientations we want the target to rotate to
+//Default orientations we want the target to rotate to
 var angleOrientation = [0, -45, 90, 45, 0, 0, 45, 90, -45];
 
-//increments the angle orientation and the loc variable
+//Increments the angle orientation and the loc variable
 var counter = 0;
 
-//current angle from angleOrientation
+//Current angle from angleOrientation
 var angle = 0;
 
-//default values for all the fields from the menu on the website 
+//Default values for all the fields from the menu on the website 
 var frequency = 0.5;
 var std = 12;
 var maxFrequency = 0.5;
 var stepFrequency = 0.5;
 
-//factors that help scale and calculate trials
+//Factors that help scale and calculate trials
 var cyclesPerDegreeFactor = 1 / 78;
 var stddevFactor = 30;
 
-//The size of the target in pixels
+//Size of the target in pixels
 var targetResolution = 300;
 
-// Default #shifts in contrast 
+//Default #shifts in contrast 
 var convergenceThreshold = 7;
 
-//excludes 0 to begin with but later repopulates all the code
+//Excludes 0 to begin with but later repopulates all the positions
 var targetPositions = [1, 2, 3, 4, 5, 6, 7, 8];
 
-//dictionary to monitor contrast history per position 
+//Dictionary to monitor contrast history per position 
 var positionContrastHistory = {
     "center": [1],
     "topLeft": [1],
@@ -63,7 +63,7 @@ var positionContrastHistory = {
     "bottomRight": [1]
 };
 
-//dictionary to monitor contrast high in 1st element and low in 2nd element per position
+//Dictionary to monitor contrast high in 1st element and low in 2nd element per position
 var Imax = {
     "center": 255,
     "topLeft": 255,
@@ -77,7 +77,7 @@ var Imax = {
 }
 
 
-//dictionary to monitor contrast high in 1st element and low in 2nd element per position
+//Dictionary to monitor contrast high in 1st element and low in 2nd element per position
 var Imin = {
     "center": 0,
     "topLeft": 0,
@@ -90,7 +90,7 @@ var Imin = {
     "bottomRight": 0
 }
 
-//dictionary to monitor yes per position 
+//Dictionary to monitor yes per position 
 var positionDelta = {
     "center": 128,
     "topLeft": 128,
@@ -103,7 +103,7 @@ var positionDelta = {
     "bottomRight": 128
 };
 
-//dictionary to monitor yes per position 
+//Dictionary to monitor yes per position 
 var positionYes = {
     "center": 1,
     "topLeft": 1,
@@ -116,7 +116,7 @@ var positionYes = {
     "bottomRight": 1
 };
 
-//dictionary to monitor shifts per position
+//Dictionary to monitor shifts per position
 var positionShifts = {
     "center": 0,
     "topLeft": 0,
@@ -129,7 +129,7 @@ var positionShifts = {
     "bottomRight": 0
 };
 
-// boolean to help keep track of shifts
+//Dictionary to track #shifts
 var shiftDirections = {
     "center": [],
     "topLeft": [],
@@ -142,7 +142,7 @@ var shiftDirections = {
     "bottomRight": []
 }
 
-// boolean to help keep track of small contrast values
+//Dictionary boolean to track of small contrast values
 var smallTargets = {
     "center": 0,
     "topLeft": 0,
@@ -155,7 +155,7 @@ var smallTargets = {
     "bottomRight": 0
 }
 
-// boolean to help keep track of all contrast values
+//Dictionary to help keep track of all contrast values
 var contrastHistory = {
         "center": [1, 1],
         "topLeft": [1, 1],
@@ -168,7 +168,7 @@ var contrastHistory = {
         "bottomRight": [1, 1]
 };
 
-//keeps track of the last key
+//Tracks of the last key
 var prev_key = Object.keys(positionContrastHistory)[counter];
 
 /*Registers controller button pressed */
